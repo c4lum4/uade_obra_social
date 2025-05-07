@@ -25,7 +25,6 @@ public class UserServiceImpl implements UserService {
     public User registerUser(User user) {
         // Encriptar contraseña antes de guardar
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRole(User.Role.USER); // asignar rol por defecto
         return userRepository.save(user);
     }
 

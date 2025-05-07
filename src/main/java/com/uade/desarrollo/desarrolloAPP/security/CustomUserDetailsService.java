@@ -22,14 +22,12 @@ public class CustomUserDetailsService implements org.springframework.security.co
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
 
-        // Validar que el usuario tenga un rol asignado
-        String role = (user.getRole() != null) ? user.getRole().name() : "USER"; // Asignar un rol por defecto si es null
+
 
         // Mapear el usuario a un objeto UserDetails de Spring Security
         return org.springframework.security.core.userdetails.User
                 .withUsername(user.getUsername())
                 .password(user.getPassword())
-                .roles(role) // Asignamos el rol del usuario
                 .build();
     }
 }

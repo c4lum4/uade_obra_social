@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 @NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "users")
@@ -44,9 +43,6 @@ public class User {
     @Column
     private String phone_number; // Número de teléfono
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Role role; // Rol del usuario (USER, ADMIN, etc.)
 
     // Constructor sin el campo de rol (por defecto USER)
     public User(Long id, String username, String email, String password, String name, String surname, String home_address, String phone_number) {
@@ -58,13 +54,6 @@ public class User {
         this.surname = surname;
         this.home_address = home_address;
         this.phone_number = phone_number;
-        this.role = Role.USER; // Asignar un rol por defecto como USER
-    }
-
-    // Enum para los roles del usuario
-    public enum Role {
-        USER,
-        ADMIN
     }
 }
 
