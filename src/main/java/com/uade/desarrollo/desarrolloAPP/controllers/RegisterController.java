@@ -1,4 +1,3 @@
-/* 
 package com.uade.desarrollo.desarrolloAPP.controllers;
 
 import com.uade.desarrollo.desarrolloAPP.entity.User;
@@ -21,4 +20,4 @@ public class RegisterController {
         return "Usuario registrado correctamente";
     }
 }
-*/
+
