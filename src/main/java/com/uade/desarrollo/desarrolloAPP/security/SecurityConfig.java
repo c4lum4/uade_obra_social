@@ -51,3 +51,5 @@ public class SecurityConfig {
         return (web) -> web.ignoring().requestMatchers("/css/**", "/js/**", "/images/**");
     }
 }
+
+//hola
