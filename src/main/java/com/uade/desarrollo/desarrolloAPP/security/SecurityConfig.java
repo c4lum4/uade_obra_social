@@ -6,7 +6,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -38,17 +37,13 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())  // Deshabilitar CSRF
             .authorizeHttpRequests(authorizeRequests -> authorizeRequests
-                .requestMatchers("/api/auth/register", "/api/auth/login", "/login").permitAll()  // Permitir registro y login sin autenticación
+                .requestMatchers("/api/auth/register", "/api/auth/login", "/login", "/api/profesionales/**", "/api/turnos/**", "/api/obras-sociales/**").permitAll()  // Permitir acceso a obras sociales
                 .requestMatchers("/users/**").permitAll()  // Permitir acceso a los endpoints bajo '/users/**'
+                .requestMatchers("/css/**", "/js/**", "/images/**").permitAll() // Permitir acceso a recursos estáticos
                 .anyRequest().authenticated()  // Requiere autenticación para todas las demás solicitudes
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);  // Asegurarse de que el filtro JWT se aplique correctamente
 
         return http.build();
-    }
-
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring().requestMatchers("/css/**", "/js/**", "/images/**");
     }
 }

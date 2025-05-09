@@ -14,7 +14,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString(exclude = {"profesional", "usuario", "notificaciones", "resultadoEstudio"})
+@ToString(exclude = {"profesional","especialidad_de_profesional","nombre_de_profesional", "usuario", "notificaciones", "resultadoEstudio"})
 public class Turno {
 
     @Id
@@ -27,6 +27,14 @@ public class Turno {
     @ManyToOne
     @JoinColumn(name = "id_profesional", nullable = false)
     private Profesional profesional;
+
+    @ManyToOne
+    @JoinColumn(name = "nombre_profesional", nullable = false)
+    private Profesional nombre_de_profesional;
+
+    @ManyToOne
+    @JoinColumn(name = "especialidad", nullable = false)
+    private Profesional especialidad_de_profesional;
 
     @ManyToOne
     @JoinColumn(name = "id_usuario", nullable = false)
