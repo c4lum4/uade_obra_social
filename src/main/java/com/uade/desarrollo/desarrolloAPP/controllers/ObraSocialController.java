@@ -48,3 +48,4 @@ public class ObraSocialController {
         return ResponseEntity.ok("Obra social eliminada correctamente.");
     }
 }
+//hola me gustas tnato
