@@ -37,12 +37,13 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())  // Deshabilitar CSRF
-            .authorizeRequests(authorizeRequests -> authorizeRequests
-                .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()  // Permitir registro y login sin autenticación
+            .authorizeHttpRequests(authorizeRequests -> authorizeRequests
+                .requestMatchers("/api/auth/register", "/api/auth/login", "/login").permitAll()  // Permitir registro y login sin autenticación
+                .requestMatchers("/users/**").permitAll()  // Permitir acceso a los endpoints bajo '/users/**'
                 .anyRequest().authenticated()  // Requiere autenticación para todas las demás solicitudes
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);  // Asegurarse de que el filtro JWT se aplique correctamente
-    
+
         return http.build();
     }
 

@@ -13,6 +13,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/users")
@@ -66,5 +69,73 @@ public class UserController {
     @GetMapping("/get-all-users")
     public ResponseEntity<Object> getAllUsers() {
         return ResponseEntity.ok(userService.findAll());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Object> deleteUser(@PathVariable Long id) {
+        Optional<User> user = userService.findById(id);
+        if (user.isEmpty()) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Usuario no encontrado");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        }
+
+        userService.deleteUserById(id);
+        Map<String, String> successResponse = new HashMap<>();
+        successResponse.put("message", "Usuario eliminado correctamente");
+        return ResponseEntity.ok(successResponse);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Object> updateUser(@PathVariable Long id, @RequestBody User updatedUser) {
+        Optional<User> existingUserOptional = userService.findById(id);
+        if (existingUserOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+        }
+
+        User existingUser = existingUserOptional.get();
+        existingUser.setName(updatedUser.getName());
+        existingUser.setSurname(updatedUser.getSurname());
+        existingUser.setEmail(updatedUser.getEmail());
+        existingUser.setHome_address(updatedUser.getHome_address());
+        existingUser.setPhone_number(updatedUser.getPhone_number());
+
+        userService.save(existingUser);
+        return ResponseEntity.ok("Usuario actualizado correctamente");
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<Object> updateUserField(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
+        Optional<User> existingUserOptional = userService.findById(id);
+        if (existingUserOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+        }
+
+        User existingUser = existingUserOptional.get();
+
+        updates.forEach((key, value) -> {
+            switch (key) {
+                case "name":
+                    existingUser.setName((String) value);
+                    break;
+                case "surname":
+                    existingUser.setSurname((String) value);
+                    break;
+                case "email":
+                    existingUser.setEmail((String) value);
+                    break;
+                case "home_address":
+                    existingUser.setHome_address((String) value);
+                    break;
+                case "phone_number":
+                    existingUser.setPhone_number((String) value);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Campo no válido: " + key);
+            }
+        });
+
+        userService.save(existingUser);
+        return ResponseEntity.ok("Campo(s) actualizado(s) correctamente");
     }
 }

@@ -14,6 +14,12 @@ public interface UserService {
 
     Optional<User> findByUsername(String username);
 
+    Optional<User> findById(Long id);
+
     List<User> findAll();
+
+    void deleteUserById(Long id);
+
+    void save(User user);
 }
 

@@ -28,10 +28,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         user.setUsername(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setEmail(request.getEmail());
-        user.setName(request.getName()); // Asignación del campo 'name'
-        user.setSurname(request.getSurname()); // Asignación del campo 'surname'
-        user.setHome_address(request.getHome_address()); // Asignación del campo 'home_address'
-        user.setPhone_number(request.getPhone_number()); // Asignación del campo 'phone_number'
+        user.setName(request.getName()); 
+        user.setSurname(request.getSurname()); 
+        user.setHome_address(request.getHome_address());
+        user.setPhone_number(request.getPhone_number()); 
         userRepository.save(user);
 
         String jwtToken = jwtUtil.generateToken(user.getUsername());

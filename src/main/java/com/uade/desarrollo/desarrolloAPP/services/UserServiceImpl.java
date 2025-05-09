@@ -23,7 +23,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User registerUser(User user) {
-        // Encriptar contraseña antes de guardar
+      
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
@@ -32,10 +32,10 @@ public class UserServiceImpl implements UserService {
     public boolean loginUser(String username, String password) {
         Optional<User> optionalUser = userRepository.findByUsername(username);
         if (optionalUser.isEmpty()) {
-            return false; // Usuario no encontrado
+            return false; 
         }
         User user = optionalUser.get();
-        // Verifica la contraseña encriptada
+      
         return passwordEncoder.matches(password, user.getPassword());
     }
 
@@ -47,5 +47,20 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<User> findAll() {
         return userRepository.findAll();
+    }
+
+    @Override
+    public void deleteUserById(Long id) {
+        userRepository.deleteById(id);
+    }
+
+    @Override
+    public Optional<User> findById(Long id) {
+        return userRepository.findById(id);
+    }
+
+    @Override
+    public void save(User user) {
+        userRepository.save(user);
     }
 }

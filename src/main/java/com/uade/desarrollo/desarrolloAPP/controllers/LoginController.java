@@ -4,7 +4,11 @@ import com.uade.desarrollo.desarrolloAPP.security.JwtUtil;
 import com.uade.desarrollo.desarrolloAPP.entity.User;
 import com.uade.desarrollo.desarrolloAPP.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/login")
@@ -17,13 +21,24 @@ public class LoginController {
     private JwtUtil jwtUtil;
 
     @PostMapping
-    public String login(@RequestBody User user) {
-        // Verificar si el usuario existe y la contraseña es correcta
-        User existingUser = userRepository.findByUsername(user.getUsername()).orElse(null);
-        if (existingUser != null && existingUser.getPassword().equals(user.getPassword())) {
-            // Generar el token JWT
-            String token = jwtUtil.generateToken(user.getUsername());
-            return token;
+    public ResponseEntity<Object> login(@RequestBody Map<String, String> credentials) {
+        String username = credentials.get("username");
+        String password = credentials.get("password");
+
+        User existingUser = userRepository.findByUsername(username).orElse(null);
+        if (existingUser != null && existingUser.getPassword().equals(password)) {
+            String token = jwtUtil.generateToken(username);
+
+            // Excluir la contraseña del usuario en la respuesta
+            existingUser.setPassword(null);
+
+            // Crear una respuesta con un mensaje y los datos del usuario
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Inicio de sesión exitoso");
+            response.put("user", existingUser);
+            response.put("token", token);
+
+            return ResponseEntity.ok(response);
         } else {
             throw new RuntimeException("Credenciales incorrectas");
         }
