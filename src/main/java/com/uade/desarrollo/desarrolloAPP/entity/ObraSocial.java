@@ -1,12 +1,16 @@
 package com.uade.desarrollo.desarrolloAPP.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
+
 import java.time.LocalDate;
 
 @Data
 @Entity
 @Table(name = "obra_social")
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ObraSocial {
 
     @Id
@@ -24,4 +28,8 @@ public class ObraSocial {
 
     @Column(nullable = false)
     private LocalDate fechaAlta;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 }

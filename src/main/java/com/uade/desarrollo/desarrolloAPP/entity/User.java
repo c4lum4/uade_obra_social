@@ -2,14 +2,14 @@ package com.uade.desarrollo.desarrolloAPP.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.util.List;
 
 @Data
 @Builder
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "users")
@@ -21,38 +21,28 @@ public class User {
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String username; // Nombre de usuario único
+    private String username;
 
     @JsonIgnore
     @Column(nullable = false)
-    private String password; // Contraseña, se debe ignorar en las respuestas JSON
+    private String password;
 
     @Column(nullable = false, unique = true)
-    private String email; // Email único
+    private String email;
 
     @Column(nullable = false)
-    private String name; // Nombre del usuario
+    private String name;
 
     @Column(nullable = false)
-    private String surname; // Apellido del usuario
+    private String surname;
 
     @Column
-    private String home_address; // Dirección del hogar
+    private String home_address;
 
     @Column
-    private String phone_number; // Número de teléfono
+    private String phone_number;
 
-
-    // Constructor sin el campo de rol (por defecto USER)
-    public User(Long id, String username, String email, String password, String name, String surname, String home_address, String phone_number) {
-        this.id = id;
-        this.username = username;
-        this.email = email;
-        this.password = password;
-        this.name = name;
-        this.surname = surname;
-        this.home_address = home_address;
-        this.phone_number = phone_number;
-    }
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<ObraSocial> obrasSociales;
 }
-
