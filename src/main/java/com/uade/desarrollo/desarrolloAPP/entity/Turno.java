@@ -14,7 +14,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString(exclude = {"profesional","especialidad_de_profesional","nombre_de_profesional", "usuario", "notificaciones", "resultadoEstudio"})
+@ToString(exclude = {"profesional", "usuario", "notificaciones", "resultadoEstudio"})
 public class Turno {
 
     @Id
@@ -29,24 +29,25 @@ public class Turno {
     private Profesional profesional;
 
     @ManyToOne
-    @JoinColumn(name = "nombre_profesional", nullable = false)
-    private Profesional nombre_de_profesional;
-
-    @ManyToOne
-    @JoinColumn(name = "especialidad", nullable = false)
-    private Profesional especialidad_de_profesional;
-
-    @ManyToOne
-    @JoinColumn(name = "id_usuario", nullable = false)
+    @JoinColumn(name = "id_usuario")
     private User usuario;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String estado;
+    private EstadoTurno estado = EstadoTurno.DISPONIBLE; // Cambiamos a enum
+
+    public enum EstadoTurno {
+        DISPONIBLE, RESERVADO, CANCELADO, COMPLETADO
+    }
 
     @OneToOne(mappedBy = "turno", cascade = CascadeType.ALL)
     private ResultadoEstudio resultadoEstudio;
 
+    
+
     @OneToMany(mappedBy = "turno")
     private List<Notificacion> notificaciones = new ArrayList<>();
+
+    
 }
 

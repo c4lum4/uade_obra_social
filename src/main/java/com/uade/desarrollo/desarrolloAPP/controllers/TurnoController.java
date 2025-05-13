@@ -1,71 +1,64 @@
 package com.uade.desarrollo.desarrolloAPP.controllers;
 
-import com.uade.desarrollo.desarrolloAPP.entity.Turno;
+import com.uade.desarrollo.desarrolloAPP.entity.dto.*;
 import com.uade.desarrollo.desarrolloAPP.services.TurnoService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.net.URI;
-import java.util.HashMap;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/turnos")
+@RequiredArgsConstructor
 public class TurnoController {
 
     private final TurnoService turnoService;
 
-    public TurnoController(TurnoService turnoService) {
-        this.turnoService = turnoService;
-    }
-
     @PostMapping
-    public ResponseEntity<Object> createTurno(@RequestBody Turno turno) {
-        Turno createdTurno = turnoService.createTurno(turno);
-
-        // Crear una respuesta detallada con información del turno, profesional y usuario
-        Map<String, Object> response = new HashMap<>();
-        response.put("id", createdTurno.getId());
-        response.put("fecha", createdTurno.getFecha());
-        response.put("estado", createdTurno.getEstado());
-
-        // Información del profesional
-        Map<String, Object> profesionalInfo = new HashMap<>();
-        profesionalInfo.put("id", createdTurno.getProfesional().getId());
-        profesionalInfo.put("nombre", createdTurno.getProfesional().getNombre());
-        profesionalInfo.put("especialidad", createdTurno.getProfesional().getEspecialidad());
-        response.put("profesional", profesionalInfo);
-
-        // Información del usuario
-        Map<String, Object> usuarioInfo = new HashMap<>();
-        usuarioInfo.put("id", createdTurno.getUsuario().getId());
-        usuarioInfo.put("username", createdTurno.getUsuario().getUsername());
-        usuarioInfo.put("email", createdTurno.getUsuario().getEmail());
-        usuarioInfo.put("name", createdTurno.getUsuario().getName());
-        usuarioInfo.put("surname", createdTurno.getUsuario().getSurname());
-        response.put("usuario", usuarioInfo);
-
-        return ResponseEntity.created(URI.create("/api/turnos/" + createdTurno.getId())).body(response);
+    public ResponseEntity<TurnoResponseDTO> createTurno(@Valid @RequestBody CrearTurnoDTO turnoDTO) {
+        TurnoResponseDTO response = turnoService.createTurno(turnoDTO);
+        return ResponseEntity.created(URI.create("/api/turnos/" + response.getId()))
+            .body(response);
     }
 
-    @GetMapping
-    public ResponseEntity<List<Turno>> getAllTurnos() {
-        return ResponseEntity.ok(turnoService.getAllTurnos());
+    @GetMapping("/profesional/{profesionalId}")
+    public ResponseEntity<List<TurnoResponseDTO>> getTurnosPorProfesional(
+        @PathVariable Integer profesionalId,
+        @RequestParam(required = false) LocalDateTime fechaInicio,
+        @RequestParam(required = false) LocalDateTime fechaFin) {
+        
+        return ResponseEntity.ok(turnoService.getTurnosPorProfesional(profesionalId, fechaInicio, fechaFin));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Turno> getTurnoById(@PathVariable Integer id) {
-        Turno turno = turnoService.getTurnoById(id);
-        if (turno == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(turno);
+    public ResponseEntity<TurnoResponseDTO> getTurnoById(@PathVariable Integer id) {
+        return ResponseEntity.ok(turnoService.getTurnoById(id));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTurnoById(@PathVariable Integer id) {
         turnoService.deleteTurnoById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/reservar")
+    public ResponseEntity<TurnoResponseDTO> reservarTurno(@Valid @RequestBody ReservaTurnoDTO reservaDTO) {
+        return ResponseEntity.ok(turnoService.reservarTurno(reservaDTO));
+    }
+    
+    @GetMapping("/disponibles/{profesionalId}")
+    public ResponseEntity<List<TurnoResponseDTO>> listarTurnosDisponibles(
+            @PathVariable Integer profesionalId) {
+        return ResponseEntity.ok(turnoService.listarTurnosDisponiblesPorProfesional(profesionalId));
+    }
+    
+    @PostMapping("/cancelar/{turnoId}")
+    public ResponseEntity<TurnoResponseDTO> cancelarTurno(
+            @PathVariable Integer turnoId,
+            @RequestParam Long usuarioId) {
+        return ResponseEntity.ok(turnoService.cancelarTurno(turnoId, usuarioId));
     }
 }

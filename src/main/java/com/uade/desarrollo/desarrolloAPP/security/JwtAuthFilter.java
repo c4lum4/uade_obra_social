@@ -25,31 +25,53 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) 
+            throws ServletException, IOException {
+            
+        // Verificar si es un endpoint público
+        if (shouldNotFilter(request)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String token = request.getHeader("Authorization");
 
-        if (token != null && token.startsWith("Bearer ")) {
-            token = token.substring(7); // Eliminar el "Bearer " del token
+        if (token == null || !token.startsWith("Bearer ")) {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token JWT requerido");
+            return;
+        }
+
+        token = token.substring(7); // Eliminar el "Bearer "
+        
+        try {
             if (jwtUtil.validateToken(token)) {
                 String username = jwtUtil.extractUsername(token);
-
-                // Cargar el UserDetails usando el servicio CustomUserDetailsService
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-                // Crear el token de autenticación con el rol
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities()
                 );
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             }
+        } catch (Exception e) {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token inválido");
+            return;
         }
 
         filterChain.doFilter(request, response);
     }
 
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        String path = request.getRequestURI();
-        return path.startsWith("/api/obras-sociales"); // Ignorar rutas de obras sociales
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        return path.startsWith("/api/auth") ||
+            path.startsWith("/login") ||
+            path.startsWith("/api/profesionales") ||
+            path.startsWith("/api/turnos") || // Asegúrate que coincida exactamente
+            path.startsWith("/api/obras-sociales") ||
+            path.startsWith("/users") ||
+            path.startsWith("/css") ||
+            path.startsWith("/js") ||
+            path.startsWith("/images");
     }
 }
