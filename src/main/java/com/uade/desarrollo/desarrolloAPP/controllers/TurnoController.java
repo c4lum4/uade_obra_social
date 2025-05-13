@@ -19,9 +19,13 @@ public class TurnoController {
 
     @PostMapping
     public ResponseEntity<TurnoResponseDTO> createTurno(@Valid @RequestBody CrearTurnoDTO turnoDTO) {
-        TurnoResponseDTO response = turnoService.createTurno(turnoDTO);
-        return ResponseEntity.created(URI.create("/api/turnos/" + response.getId()))
-            .body(response);
+        try {
+            TurnoResponseDTO response = turnoService.createTurno(turnoDTO);
+            return ResponseEntity.created(URI.create("/api/turnos/" + response.getId()))
+                .body(response);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al crear turno");
+        }
     }
 
     @GetMapping("/profesional/{profesionalId}")
@@ -35,18 +39,30 @@ public class TurnoController {
 
     @GetMapping("/{id}")
     public ResponseEntity<TurnoResponseDTO> getTurnoById(@PathVariable Integer id) {
-        return ResponseEntity.ok(turnoService.getTurnoById(id));
+        try {
+            return ResponseEntity.ok(turnoService.getTurnoById(id));
+        } catch (Exception e) {
+            throw new RuntimeException("Turno no encontrado");
+        }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTurnoById(@PathVariable Integer id) {
-        turnoService.deleteTurnoById(id);
-        return ResponseEntity.noContent().build();
+        try {
+            turnoService.deleteTurnoById(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            throw new RuntimeException("No se pudo eliminar el turno");
+        }
     }
 
     @PostMapping("/reservar")
     public ResponseEntity<TurnoResponseDTO> reservarTurno(@Valid @RequestBody ReservaTurnoDTO reservaDTO) {
-        return ResponseEntity.ok(turnoService.reservarTurno(reservaDTO));
+        try {
+            return ResponseEntity.ok(turnoService.reservarTurno(reservaDTO));
+        } catch (Exception e) {
+            throw new RuntimeException("No se pudo reservar el turno");
+        }
     }
     
     @GetMapping("/disponibles/{profesionalId}")
@@ -59,6 +75,10 @@ public class TurnoController {
     public ResponseEntity<TurnoResponseDTO> cancelarTurno(
             @PathVariable Integer turnoId,
             @RequestParam Long usuarioId) {
-        return ResponseEntity.ok(turnoService.cancelarTurno(turnoId, usuarioId));
+        try {
+            return ResponseEntity.ok(turnoService.cancelarTurno(turnoId, usuarioId));
+        } catch (Exception e) {
+            throw new RuntimeException("No se pudo cancelar el turno");
+        }
     }
 }

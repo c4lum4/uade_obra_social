@@ -22,8 +22,12 @@ public class ObraSocialController {
 
     @PostMapping
     public ResponseEntity<ObraSocial> createObraSocial(@RequestBody ObraSocialRequest request) {
-        ObraSocial created = obraSocialService.createObraSocial(request);
-        return ResponseEntity.created(URI.create("/api/obras-sociales/" + created.getId())).body(created);
+        try {
+            ObraSocial created = obraSocialService.createObraSocial(request);
+            return ResponseEntity.created(URI.create("/api/obras-sociales/" + created.getId())).body(created);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al crear obra social");
+        }
     }
 
     @GetMapping
@@ -34,13 +38,17 @@ public class ObraSocialController {
     @GetMapping("/{id}")
     public ResponseEntity<ObraSocial> getObraSocialById(@PathVariable Integer id) {
         ObraSocial obraSocial = obraSocialService.getObraSocialById(id);
-        return obraSocial != null ? ResponseEntity.ok(obraSocial) : ResponseEntity.notFound().build();
+        if (obraSocial == null) {
+            throw new RuntimeException("Obra social no encontrada");
+        }
+        return ResponseEntity.ok(obraSocial);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteObraSocialById(@PathVariable Integer id) {
-        if (obraSocialService.getObraSocialById(id) == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No existe esa obra social.");
+        ObraSocial obraSocial = obraSocialService.getObraSocialById(id);
+        if (obraSocial == null) {
+            throw new RuntimeException("No existe esa obra social.");
         }
         obraSocialService.deleteObraSocialById(id);
         return ResponseEntity.ok("Obra social eliminada correctamente.");

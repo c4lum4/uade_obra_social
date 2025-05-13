@@ -20,8 +20,12 @@ public class ProfesionalController {
 
     @PostMapping
     public ResponseEntity<Profesional> createProfesional(@RequestBody Profesional profesional) {
-        Profesional createdProfesional = profesionalService.createProfesional(profesional);
-        return ResponseEntity.created(URI.create("/api/profesionales/" + createdProfesional.getId())).body(createdProfesional);
+        try {
+            Profesional createdProfesional = profesionalService.createProfesional(profesional);
+            return ResponseEntity.created(URI.create("/api/profesionales/" + createdProfesional.getId())).body(createdProfesional);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al crear profesional");
+        }
     }
 
     @GetMapping
@@ -33,13 +37,17 @@ public class ProfesionalController {
     public ResponseEntity<Profesional> getProfesionalById(@PathVariable Integer id) {
         Profesional profesional = profesionalService.getProfesionalById(id);
         if (profesional == null) {
-            return ResponseEntity.notFound().build();
+            throw new RuntimeException("Profesional no encontrado");
         }
         return ResponseEntity.ok(profesional);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProfesionalById(@PathVariable Integer id) {
+        Profesional profesional = profesionalService.getProfesionalById(id);
+        if (profesional == null) {
+            throw new RuntimeException("Profesional no encontrado");
+        }
         profesionalService.deleteProfesionalById(id);
         return ResponseEntity.noContent().build();
     }
