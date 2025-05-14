@@ -51,7 +51,8 @@ public class SecurityConfig {
                     "/users/**",
                     "/css/**",
                     "/js/**",
-                    "/images/**"
+                    "/images/**",
+                    "/api/password-reset/**"
                 ).permitAll()
                 .anyRequest().authenticated()
             )
