@@ -18,6 +18,8 @@ public class TurnoServiceImpl implements TurnoService {
     private final TurnoRepository turnoRepository;
     private final UserRepository userRepository;
     private final ProfesionalRepository profesionalRepository;
+    private final NotificacionService notificacionService;
+
 
     @Override
     public TurnoResponseDTO createTurno(CrearTurnoDTO turnoDTO) {
@@ -73,8 +75,12 @@ public class TurnoServiceImpl implements TurnoService {
         turno.setEstado(Turno.EstadoTurno.RESERVADO);
 
         Turno turnoActualizado = turnoRepository.save(turno);
-        return convertToDTO(turnoActualizado);
-    }
+        // Crear notificación
+        String mensaje = "Has reservado un turno para el día " + turnoActualizado.getFecha();
+        notificacionService.crearNotificacion(mensaje, turnoActualizado, usuario);
+
+    return convertToDTO(turnoActualizado);
+}
 
     @Override
     public List<TurnoResponseDTO> listarTurnosDisponiblesPorProfesional(Integer profesionalId) {
