@@ -62,17 +62,19 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getServletPath();
-        return path.startsWith("/api/auth") ||
-            path.startsWith("/login") ||
-            path.startsWith("/api/profesionales") ||
-            path.startsWith("/api/turnos") || // Asegúrate que coincida exactamente
-            path.startsWith("/api/obras-sociales") ||
-            path.startsWith("/users") ||
-            path.startsWith("/css") ||
-            path.startsWith("/js") ||
-            path.startsWith("/images")||
-            path.startsWith("/api/password-reset");
-    }
+protected boolean shouldNotFilter(HttpServletRequest request) {
+    String path = request.getServletPath();
+    return path.startsWith("/api/auth") ||
+        path.startsWith("/login") ||
+        path.startsWith("/api/profesionales") ||
+        path.startsWith("/api/turnos") ||
+        path.startsWith("/api/obras-sociales") ||
+        path.startsWith("/api/disponibilidades") || // <-- AGREGADO
+        path.startsWith("/users") ||
+        path.startsWith("/css") ||
+        path.startsWith("/js") ||
+        path.startsWith("/images") ||
+        path.startsWith("/api/password-reset");
+}
+
 }

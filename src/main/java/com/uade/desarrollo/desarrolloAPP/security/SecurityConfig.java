@@ -52,7 +52,9 @@ public class SecurityConfig {
                     "/css/**",
                     "/js/**",
                     "/images/**",
-                    "/api/password-reset/**"
+                    "/api/password-reset/**",
+                    "/api/disponibilidades/**"
+
                 ).permitAll()
                 .anyRequest().authenticated()
             )
