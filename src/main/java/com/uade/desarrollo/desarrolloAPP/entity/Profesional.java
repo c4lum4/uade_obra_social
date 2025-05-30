@@ -11,7 +11,7 @@ public class Profesional {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Integer id; //matricula en vez de id, va a ser el identificador único del profesional
 
     @Column(nullable = false)
     private String nombre;
@@ -28,4 +28,5 @@ public class Profesional {
     @OneToMany(mappedBy = "profesional")
     private List<Disponibilidad> disponibilidades;
 }
+
 
