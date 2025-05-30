@@ -6,6 +6,8 @@ import com.uade.desarrollo.desarrolloAPP.entity.dto.UserRequest;
 import com.uade.desarrollo.desarrolloAPP.security.JwtUtil;
 import com.uade.desarrollo.desarrolloAPP.services.AuthenticationService;
 import com.uade.desarrollo.desarrolloAPP.services.UserService;
+import com.uade.desarrollo.desarrolloAPP.entity.User;
+import com.uade.desarrollo.desarrolloAPP.entity.dto.UserProfileDTO;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,10 +43,29 @@ public class AuthenticationController {
     public ResponseEntity<?> getUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
         String token = extractToken(authHeader);
         if (token != null && jwtUtil.isTokenValid(token, jwtUtil.extractUsername(token))) {
-            var user = userDetailsService.loadUserByUsername(jwtUtil.extractUsername(token));
-            return ResponseEntity.ok(user);
+            String username = jwtUtil.extractUsername(token);
+            var userOpt = userService.findByUsername(username);
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+                UserProfileDTO dto = toUserProfileDTO(user);
+                return ResponseEntity.ok(dto);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+            }
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    private UserProfileDTO toUserProfileDTO(User user) {
+        UserProfileDTO dto = new UserProfileDTO();
+        dto.setId(user.getId());
+        dto.setUsername(user.getUsername());
+        dto.setEmail(user.getEmail());
+        dto.setName(user.getName());
+        dto.setSurname(user.getSurname());
+        dto.setHome_address(user.getHome_address());
+        dto.setPhone_number(user.getPhone_number());
+        return dto;
     }
 
     private String extractToken(String authHeader) {

@@ -68,7 +68,6 @@ protected boolean shouldNotFilter(HttpServletRequest request) {
         path.startsWith("/login") ||
         path.startsWith("/api/profesionales") ||
         path.startsWith("/api/turnos") ||
-        path.startsWith("/api/obras-sociales") ||
         path.startsWith("/api/disponibilidades") || // <-- AGREGADO
         path.startsWith("/users") ||
         path.startsWith("/css") ||

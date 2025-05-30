@@ -39,7 +39,7 @@ public class ObraSocialController {
     public ResponseEntity<ObraSocial> getObraSocialById(@PathVariable Integer id) {
         ObraSocial obraSocial = obraSocialService.getObraSocialById(id);
         if (obraSocial == null) {
-            throw new RuntimeException("Obra social no encontrada");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
         return ResponseEntity.ok(obraSocial);
     }

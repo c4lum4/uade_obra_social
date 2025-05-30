@@ -47,7 +47,6 @@ public class SecurityConfig {
                     "/login",
                     "/api/profesionales/**",
                     "/api/turnos/**",
-                    "/api/obras-sociales/**",
                     "/users/**",
                     "/css/**",
                     "/js/**",
