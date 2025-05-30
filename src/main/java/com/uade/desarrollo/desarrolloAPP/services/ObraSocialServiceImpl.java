@@ -3,6 +3,7 @@ package com.uade.desarrollo.desarrolloAPP.services;
 import com.uade.desarrollo.desarrolloAPP.entity.ObraSocial;
 import com.uade.desarrollo.desarrolloAPP.entity.User;
 import com.uade.desarrollo.desarrolloAPP.entity.dto.ObraSocialRequest;
+import com.uade.desarrollo.desarrolloAPP.entity.dto.ObraSocialResponseDTO;
 import com.uade.desarrollo.desarrolloAPP.exceptions.ObraSocialDuplicadaException;
 import com.uade.desarrollo.desarrolloAPP.repository.ObraSocialRepository;
 import com.uade.desarrollo.desarrolloAPP.repository.UserRepository;
@@ -57,5 +58,12 @@ public class ObraSocialServiceImpl implements ObraSocialService {
     @Override
     public void deleteObraSocialById(Integer id) {
         obraSocialRepository.deleteById(id);
+    }
+
+    @Override
+    public ObraSocialResponseDTO getObraSocialByUserId(Long userId) {
+        ObraSocial obraSocial = obraSocialRepository.findByUserId(userId)
+            .orElseThrow(() -> new RuntimeException("No se encontró obra social para el usuario con ID: " + userId));
+        return ObraSocialResponseDTO.fromEntity(obraSocial);
     }
 }

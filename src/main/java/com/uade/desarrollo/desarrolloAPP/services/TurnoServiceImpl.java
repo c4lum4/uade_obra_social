@@ -63,8 +63,19 @@ public class TurnoServiceImpl implements TurnoService {
         Turno turno = turnoRepository.findById(reservaDTO.getTurnoId())
             .orElseThrow(() -> new RuntimeException("Turno no encontrado"));
         
+        // Verificar si ya existe un turno reservado en esa fecha para ese profesional
+        boolean turnoExistente = turnoRepository.existsByProfesionalIdAndFechaAndEstadoIn(
+            turno.getProfesional().getId(),
+            turno.getFecha(),
+            List.of(Turno.EstadoTurno.RESERVADO, Turno.EstadoTurno.COMPLETADO)
+        );
+        
+        if (turnoExistente) {
+            throw new TurnoYaReservadoException("Ya existe un turno reservado para este profesional en ese horario");
+        }
+
         if (turno.getEstado() != Turno.EstadoTurno.DISPONIBLE) {
-            throw new TurnoYaReservadoException("El turno ya se encuentra reservado por otro usuario");
+            throw new TurnoYaReservadoException("El turno ya no está disponible");
         }
 
         User usuario = userRepository.findById(reservaDTO.getUsuarioId())
@@ -74,12 +85,13 @@ public class TurnoServiceImpl implements TurnoService {
         turno.setEstado(Turno.EstadoTurno.RESERVADO);
 
         Turno turnoActualizado = turnoRepository.save(turno);
+        
         // Crear notificación
         String mensaje = "Has reservado un turno para el día " + turnoActualizado.getFecha();
         notificacionService.crearNotificacion(mensaje, turnoActualizado, usuario);
 
-    return convertToDTO(turnoActualizado);
-}
+        return convertToDTO(turnoActualizado);
+    }
 
     @Override
     public List<TurnoResponseDTO> listarTurnosDisponiblesPorProfesional(Integer profesionalId) {

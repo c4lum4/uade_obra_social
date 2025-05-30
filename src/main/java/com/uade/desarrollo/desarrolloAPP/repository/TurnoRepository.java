@@ -19,4 +19,10 @@ public interface TurnoRepository extends JpaRepository<Turno, Integer> {
         @Param("profesionalId") Integer profesionalId,
         @Param("fechaInicio") LocalDateTime fechaInicio,
         @Param("fechaFin") LocalDateTime fechaFin);
+    
+    boolean existsByProfesionalIdAndFechaAndEstadoIn(
+        Integer profesionalId, 
+        LocalDateTime fecha, 
+        List<Turno.EstadoTurno> estados
+    );
 }

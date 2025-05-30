@@ -2,6 +2,7 @@ package com.uade.desarrollo.desarrolloAPP.controllers;
 
 import com.uade.desarrollo.desarrolloAPP.entity.ObraSocial;
 import com.uade.desarrollo.desarrolloAPP.entity.dto.ObraSocialRequest;
+import com.uade.desarrollo.desarrolloAPP.entity.dto.ObraSocialResponseDTO;
 import com.uade.desarrollo.desarrolloAPP.services.ObraSocialService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,6 +50,16 @@ public class ObraSocialController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
         return ResponseEntity.ok(obraSocial);
+    }    @GetMapping("/usuario/{userId}")
+    public ResponseEntity<?> getObraSocialByUserId(@PathVariable Long userId) {
+        try {
+            ObraSocialResponseDTO obraSocial = obraSocialService.getObraSocialByUserId(userId);
+            return ResponseEntity.ok(obraSocial);
+        } catch (RuntimeException e) {
+            return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(Map.of("mensaje", e.getMessage()));
+        }
     }
 
     @DeleteMapping("/{id}")
