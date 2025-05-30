@@ -9,7 +9,9 @@ import com.uade.desarrollo.desarrolloAPP.repository.UserRepository;
 import com.uade.desarrollo.desarrolloAPP.services.NotificacionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import java.util.Map;
 
 import java.util.List;
 import java.util.Optional;
@@ -36,25 +38,43 @@ public class NotificacionController {
     public List<NotificacionDTO> getTodasLasNotificaciones() {
         List<Notificacion> notificaciones = notificacionService.getTodasLasNotificaciones();
         return notificaciones.stream().map(this::convertToDTO).collect(Collectors.toList());
-    }
-
-    // POST /api/notificaciones
-    @PostMapping
+    }    @PostMapping
     public ResponseEntity<?> crearNotificacion(@RequestBody NotificacionDTO dto) {
-        Optional<Turno> turnoOpt = turnoRepository.findById(dto.getTurnoId());
-        Optional<User> usuarioOpt = userRepository.findById(dto.getUsuarioId());
+        try {
+            Optional<Turno> turnoOpt = turnoRepository.findById(dto.getTurnoId());
+            if (turnoOpt.isEmpty()) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("mensaje", "No se encontró el turno especificado"));
+            }
 
-        if (turnoOpt.isEmpty() || usuarioOpt.isEmpty()) {
-            return ResponseEntity.badRequest().body("Turno o Usuario no encontrados");
+            Optional<User> usuarioOpt = userRepository.findById(dto.getUsuarioId());
+            if (usuarioOpt.isEmpty()) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("mensaje", "No se encontró el usuario especificado"));
+            }
+
+            // Validar que el turno corresponda al usuario
+            if (!turnoOpt.get().getUsuario().getId().equals(dto.getUsuarioId())) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("mensaje", "El turno no corresponde al usuario especificado"));
+            }
+
+            Notificacion notificacion = notificacionService.crearNotificacion(
+                    dto.getMensaje(),
+                    turnoOpt.get(),
+                    usuarioOpt.get()
+            );
+
+            return ResponseEntity.ok()
+                .body(Map.of(
+                    "mensaje", "Notificación creada exitosamente",
+                    "notificacion", convertToDTO(notificacion)
+                ));
+        } catch (Exception e) {
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("mensaje", "Error al crear la notificación: " + e.getMessage()));
         }
-
-        Notificacion notificacion = notificacionService.crearNotificacion(
-                dto.getMensaje(),
-                turnoOpt.get(),
-                usuarioOpt.get()
-        );
-
-        return ResponseEntity.ok(convertToDTO(notificacion));
     }
 
     private NotificacionDTO convertToDTO(Notificacion notificacion) {

@@ -2,6 +2,7 @@ package com.uade.desarrollo.desarrolloAPP.services;
 
 import com.uade.desarrollo.desarrolloAPP.entity.*;
 import com.uade.desarrollo.desarrolloAPP.entity.dto.*;
+import com.uade.desarrollo.desarrolloAPP.exceptions.TurnoYaReservadoException;
 import com.uade.desarrollo.desarrolloAPP.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -57,15 +58,13 @@ public class TurnoServiceImpl implements TurnoService {
     @Override
     public void deleteTurnoById(Integer id) {
         turnoRepository.deleteById(id);
-    }
-
-    @Override
+    }    @Override
     public TurnoResponseDTO reservarTurno(ReservaTurnoDTO reservaDTO) {
         Turno turno = turnoRepository.findById(reservaDTO.getTurnoId())
             .orElseThrow(() -> new RuntimeException("Turno no encontrado"));
         
         if (turno.getEstado() != Turno.EstadoTurno.DISPONIBLE) {
-            throw new IllegalStateException("El turno no está disponible para reserva");
+            throw new TurnoYaReservadoException("El turno ya se encuentra reservado por otro usuario");
         }
 
         User usuario = userRepository.findById(reservaDTO.getUsuarioId())
@@ -88,19 +87,24 @@ public class TurnoServiceImpl implements TurnoService {
             .stream()
             .map(this::convertToDTO)
             .collect(Collectors.toList());
-    }
-
-    @Override
+    }    @Override
     public TurnoResponseDTO cancelarTurno(Integer turnoId, Long usuarioId) {
         Turno turno = turnoRepository.findById(turnoId)
             .orElseThrow(() -> new RuntimeException("Turno no encontrado"));
         
-        if (!turno.getUsuario().getId().equals(usuarioId)) {
-            throw new SecurityException("No tienes permiso para cancelar este turno");
-        }
+        // Guardar el usuario antes de eliminarlo para la notificación
+        User usuario = turno.getUsuario();
         
-        turno.setEstado(Turno.EstadoTurno.CANCELADO);
+        // Restablecer el turno como disponible
+        turno.setEstado(Turno.EstadoTurno.DISPONIBLE);
+        turno.setUsuario(null);
+        
         Turno turnoActualizado = turnoRepository.save(turno);
+        
+        // Crear notificación de cancelación
+        String mensaje = "Tu turno para el día " + turnoActualizado.getFecha() + " ha sido cancelado";
+        notificacionService.crearNotificacion(mensaje, turnoActualizado, usuario);
+        
         return convertToDTO(turnoActualizado);
     }
 

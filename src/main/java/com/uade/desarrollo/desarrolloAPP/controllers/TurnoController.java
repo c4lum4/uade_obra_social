@@ -1,11 +1,14 @@
 package com.uade.desarrollo.desarrolloAPP.controllers;
 
 import com.uade.desarrollo.desarrolloAPP.entity.dto.*;
+import com.uade.desarrollo.desarrolloAPP.exceptions.TurnoYaReservadoException;
 import com.uade.desarrollo.desarrolloAPP.services.TurnoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.Map;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -54,14 +57,23 @@ public class TurnoController {
         } catch (Exception e) {
             throw new RuntimeException("No se pudo eliminar el turno");
         }
-    }
-
-    @PostMapping("/reservar")
-    public ResponseEntity<TurnoResponseDTO> reservarTurno(@Valid @RequestBody ReservaTurnoDTO reservaDTO) {
+    }    @PostMapping("/reservar")
+    public ResponseEntity<?> reservarTurno(@Valid @RequestBody ReservaTurnoDTO reservaDTO) {
         try {
-            return ResponseEntity.ok(turnoService.reservarTurno(reservaDTO));
+            TurnoResponseDTO turno = turnoService.reservarTurno(reservaDTO);
+            return ResponseEntity.ok()
+                .body(Map.of(
+                    "mensaje", "Turno reservado exitosamente",
+                    "turno", turno
+                ));
+        } catch (TurnoYaReservadoException e) {
+            return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("mensaje", e.getMessage()));
         } catch (Exception e) {
-            throw new RuntimeException("No se pudo reservar el turno");
+            return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("mensaje", "No se pudo reservar el turno"));
         }
     }
     
@@ -69,16 +81,21 @@ public class TurnoController {
     public ResponseEntity<List<TurnoResponseDTO>> listarTurnosDisponibles(
             @PathVariable Integer profesionalId) {
         return ResponseEntity.ok(turnoService.listarTurnosDisponiblesPorProfesional(profesionalId));
-    }
-    
-    @PostMapping("/cancelar/{turnoId}")
-    public ResponseEntity<TurnoResponseDTO> cancelarTurno(
+    }      @PostMapping("/cancelar/{turnoId}")
+    public ResponseEntity<?> cancelarTurno(
             @PathVariable Integer turnoId,
             @RequestParam Long usuarioId) {
         try {
-            return ResponseEntity.ok(turnoService.cancelarTurno(turnoId, usuarioId));
+            TurnoResponseDTO turno = turnoService.cancelarTurno(turnoId, usuarioId);
+            return ResponseEntity.ok()
+                .body(Map.of(
+                    "mensaje", "Turno cancelado exitosamente",
+                    "turno", turno
+                ));
         } catch (Exception e) {
-            throw new RuntimeException("No se pudo cancelar el turno");
+            return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("mensaje", "No se pudo cancelar el turno: " + e.getMessage()));
         }
     }
 }

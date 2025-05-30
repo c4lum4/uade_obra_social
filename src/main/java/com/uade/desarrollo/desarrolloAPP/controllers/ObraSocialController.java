@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/obras-sociales")
@@ -21,12 +22,18 @@ public class ObraSocialController {
     }
 
     @PostMapping
-    public ResponseEntity<ObraSocial> createObraSocial(@RequestBody ObraSocialRequest request) {
+    public ResponseEntity<?> createObraSocial(@RequestBody ObraSocialRequest request) {
         try {
             ObraSocial created = obraSocialService.createObraSocial(request);
-            return ResponseEntity.created(URI.create("/api/obras-sociales/" + created.getId())).body(created);
-        } catch (Exception e) {
-            throw new RuntimeException("Error al crear obra social");
+            return ResponseEntity.created(URI.create("/api/obras-sociales/" + created.getId()))
+                .body(Map.of(
+                    "mensaje", "Obra social creada exitosamente",
+                    "obraSocial", created
+                ));
+        } catch (RuntimeException e) {
+            return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("mensaje", e.getMessage()));
         }
     }
 
