@@ -37,7 +37,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String token = request.getHeader("Authorization");
 
         if (token == null || !token.startsWith("Bearer ")) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token JWT requerido");
+            filterChain.doFilter(request, response);
             return;
         }
 
@@ -54,7 +54,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             }
         } catch (Exception e) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token inválido");
+            filterChain.doFilter(request, response);
             return;
         }
 
@@ -62,18 +62,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     @Override
-protected boolean shouldNotFilter(HttpServletRequest request) {
-    String path = request.getServletPath();
-    return path.startsWith("/api/auth") ||
-        path.startsWith("/login") ||
-        path.startsWith("/api/profesionales") ||
-        path.startsWith("/api/turnos") ||
-        path.startsWith("/api/disponibilidades") || // <-- AGREGADO
-        path.startsWith("/users") ||
-        path.startsWith("/css") ||
-        path.startsWith("/js") ||
-        path.startsWith("/images") ||
-        path.startsWith("/api/password-reset");
-}
-
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return path.startsWith("/api/auth") ||
+               path.startsWith("/login") ||
+               path.startsWith("/api/profesionales") ||
+               path.startsWith("/api/turnos") ||
+               path.contains("/api/turnos/buscar/profesional") ||
+               path.startsWith("/api/disponibilidades");
+    }
 }

@@ -21,7 +21,6 @@ public class TurnoServiceImpl implements TurnoService {
     private final ProfesionalRepository profesionalRepository;
     private final NotificacionService notificacionService;
 
-
     @Override
     public TurnoResponseDTO createTurno(CrearTurnoDTO turnoDTO) {
         Profesional profesional = profesionalRepository.findById(turnoDTO.getProfesionalId())
@@ -58,12 +57,14 @@ public class TurnoServiceImpl implements TurnoService {
     @Override
     public void deleteTurnoById(Integer id) {
         turnoRepository.deleteById(id);
-    }    @Override
+    }
+
+    @Override
     public TurnoResponseDTO reservarTurno(ReservaTurnoDTO reservaDTO) {
         Turno turno = turnoRepository.findById(reservaDTO.getTurnoId())
             .orElseThrow(() -> new RuntimeException("Turno no encontrado"));
         
-        // Verificar si ya existe un turno reservado en esa fecha para ese profesional
+        // Verificar si ya hay un turno reservado/completado para ese profesional en esa fecha
         boolean turnoExistente = turnoRepository.existsByProfesionalIdAndFechaAndEstadoIn(
             turno.getProfesional().getId(),
             turno.getFecha(),
@@ -99,7 +100,9 @@ public class TurnoServiceImpl implements TurnoService {
             .stream()
             .map(this::convertToDTO)
             .collect(Collectors.toList());
-    }    @Override
+    }
+
+    @Override
     public TurnoResponseDTO cancelarTurno(Integer turnoId, Long usuarioId) {
         Turno turno = turnoRepository.findById(turnoId)
             .orElseThrow(() -> new RuntimeException("Turno no encontrado"));
@@ -120,23 +123,45 @@ public class TurnoServiceImpl implements TurnoService {
         return convertToDTO(turnoActualizado);
     }
 
+    // Helper para convertir Turno → TurnoResponseDTO
     public TurnoResponseDTO convertToDTO(Turno turno) {
         TurnoResponseDTO dto = new TurnoResponseDTO();
         dto.setId(turno.getId());
         dto.setFecha(turno.getFecha());
         dto.setEstado(turno.getEstado().name());
-        
         if (turno.getProfesional() != null) {
             dto.setProfesionalId(turno.getProfesional().getId());
             dto.setNombreProfesional(turno.getProfesional().getNombre());
             dto.setEspecialidadProfesional(turno.getProfesional().getEspecialidad());
         }
-        
         if (turno.getUsuario() != null) {
             dto.setUsuarioId(turno.getUsuario().getId());
             dto.setNombreUsuario(turno.getUsuario().getName() + " " + turno.getUsuario().getSurname());
         }
-        
         return dto;
+    }
+
+    // ——> Helper para convertir Turno → TurnoDTO (para la búsqueda)
+    public TurnoDTO convertToTurnoDTO(Turno turno) {
+        TurnoDTO dto = new TurnoDTO();
+        dto.setId(turno.getId());
+        dto.setFecha(turno.getFecha());
+        dto.setProfesionalId(turno.getProfesional().getId());
+        dto.setNombre_de_profesional(turno.getProfesional().getNombre());
+        dto.setEspecialidad_de_profesional(turno.getProfesional().getEspecialidad());
+        if (turno.getUsuario() != null) {
+            dto.setUsuarioId(turno.getUsuario().getId());
+        }
+        dto.setEstado(turno.getEstado().name());
+        return dto;
+    }
+
+    // ——> Implementación del método de búsqueda por nombre de profesional
+    @Override
+    public List<TurnoDTO> buscarTurnosPorNombreProfesional(String nombreProfesional) {
+        List<Turno> turnos = turnoRepository.findByProfesionalNombre(nombreProfesional);
+        return turnos.stream()
+            .map(this::convertToTurnoDTO)
+            .collect(Collectors.toList());
     }
 }

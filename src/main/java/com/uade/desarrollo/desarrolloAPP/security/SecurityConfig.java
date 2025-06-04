@@ -40,12 +40,13 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
-            .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Añade configuración CORS
-            .authorizeHttpRequests(authorizeRequests -> authorizeRequests
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                     "/api/auth/**",
                     "/login",
                     "/api/profesionales/**",
+                    "/api/turnos/buscar/profesional",
                     "/api/turnos/**",
                     "/users/**",
                     "/css/**",
@@ -53,7 +54,6 @@ public class SecurityConfig {
                     "/images/**",
                     "/api/password-reset/**",
                     "/api/disponibilidades/**"
-
                 ).permitAll()
                 .anyRequest().authenticated()
             )
@@ -62,11 +62,10 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // Configuración CORS para desarrollo
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("*")); // Permite todos los orígenes (ajusta en producción)
+        configuration.setAllowedOrigins(List.of("*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("Authorization"));

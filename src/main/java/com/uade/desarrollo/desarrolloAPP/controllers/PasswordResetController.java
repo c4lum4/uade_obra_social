@@ -55,23 +55,6 @@ public class PasswordResetController {
         ));
     }
 
-    @PostMapping("/validate")
-    public ResponseEntity<?> validateToken(@RequestParam String token) {
-        Optional<PasswordResetToken> tokenOpt = tokenRepository.findByToken(token);
-
-        if (tokenOpt.isEmpty() || tokenOpt.get().isExpired() || tokenOpt.get().isUsed()) {
-            return ResponseEntity.badRequest().body(Map.of(
-                "success", false,
-                "message", "Token inválido o expirado"
-            ));
-        }
-
-        return ResponseEntity.ok(Map.of(
-            "success", true,
-            "message", "Token válido"
-        ));
-    }
-
     @PutMapping("/reset")
     public ResponseEntity<?> resetPassword(
             @RequestParam String token,

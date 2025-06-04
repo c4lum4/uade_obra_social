@@ -13,3 +13,4 @@ public class TurnoDTO {
     private Long usuarioId;
     private String estado;
 }
+
