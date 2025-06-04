@@ -25,7 +25,7 @@ public class TurnoController {
     @PostMapping
     public ResponseEntity<TurnoResponseDTO> createTurno(@Valid @RequestBody CrearTurnoDTO turnoDTO) {
         try {
-            TurnoResponseDTO response = turnoService.createTurno(turnoDTO);
+            var response = turnoService.createTurno(turnoDTO);
             return ResponseEntity.created(URI.create("/api/turnos/" + response.getId()))
                     .body(response);
         } catch (Exception e) {
@@ -39,9 +39,8 @@ public class TurnoController {
             @RequestParam(required = false) LocalDateTime fechaInicio,
             @RequestParam(required = false) LocalDateTime fechaFin) {
 
-        return ResponseEntity.ok(
-                turnoService.getTurnosPorProfesional(profesionalId, fechaInicio, fechaFin)
-        );
+        var lista = turnoService.getTurnosPorProfesional(profesionalId, fechaInicio, fechaFin);
+        return ResponseEntity.ok(lista);
     }
 
     @GetMapping("/{id}")
@@ -66,19 +65,16 @@ public class TurnoController {
     @PostMapping("/reservar")
     public ResponseEntity<?> reservarTurno(@Valid @RequestBody ReservaTurnoDTO reservaDTO) {
         try {
-            TurnoResponseDTO turno = turnoService.reservarTurno(reservaDTO);
-            return ResponseEntity.ok()
-                    .body(Map.of(
-                            "mensaje", "Turno reservado exitosamente",
-                            "turno", turno
-                    ));
+            var turno = turnoService.reservarTurno(reservaDTO);
+            return ResponseEntity.ok(Map.of(
+                    "mensaje", "Turno reservado exitosamente",
+                    "turno", turno
+            ));
         } catch (TurnoYaReservadoException e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("mensaje", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("mensaje", "No se pudo reservar el turno"));
         }
     }
@@ -86,9 +82,8 @@ public class TurnoController {
     @GetMapping("/disponibles/{profesionalId}")
     public ResponseEntity<List<TurnoResponseDTO>> listarTurnosDisponibles(
             @PathVariable Integer profesionalId) {
-        return ResponseEntity.ok(
-                turnoService.listarTurnosDisponiblesPorProfesional(profesionalId)
-        );
+        var lista = turnoService.listarTurnosDisponiblesPorProfesional(profesionalId);
+        return ResponseEntity.ok(lista);
     }
 
     @PostMapping("/cancelar/{turnoId}")
@@ -96,29 +91,38 @@ public class TurnoController {
             @PathVariable Integer turnoId,
             @RequestParam Long usuarioId) {
         try {
-            TurnoResponseDTO turno = turnoService.cancelarTurno(turnoId, usuarioId);
-            return ResponseEntity.ok()
-                    .body(Map.of(
-                            "mensaje", "Turno cancelado exitosamente",
-                            "turno", turno
-                    ));
+            var turno = turnoService.cancelarTurno(turnoId, usuarioId);
+            return ResponseEntity.ok(Map.of(
+                    "mensaje", "Turno cancelado exitosamente",
+                    "turno", turno
+            ));
         } catch (Exception e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("mensaje", "No se pudo cancelar el turno: " + e.getMessage()));
         }
     }
 
-    // ——> Aquí se agrega el endpoint para buscar turnos por nombre de profesional:
+    // Búsqueda solo por nombre de profesional (existente)
     @GetMapping("/buscar/profesional")
     @CrossOrigin(origins = "*", methods = {RequestMethod.GET})
     public ResponseEntity<List<TurnoDTO>> buscarTurnosPorNombreProfesional(
             @RequestParam(name = "nombre", required = true) String nombre) {
         try {
-            List<TurnoDTO> turnos = turnoService.buscarTurnosPorNombreProfesional(nombre);
-            return ResponseEntity.ok()
-                    .header("Access-Control-Allow-Origin", "*")
-                    .body(turnos);
+            var turnos = turnoService.buscarTurnosPorNombreProfesional(nombre);
+            return ResponseEntity.ok().header("Access-Control-Allow-Origin", "*").body(turnos);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // ——> Nuevo endpoint: buscar solo por nombre de obra social
+    @GetMapping("/buscar/obra-social")
+    @CrossOrigin(origins = "*", methods = {RequestMethod.GET})
+    public ResponseEntity<List<TurnoDTO>> buscarTurnosPorObraSocial(
+            @RequestParam(name = "obraSocial", required = true) String obraSocial) {
+        try {
+            var turnos = turnoService.buscarTurnosPorObraSocial(obraSocial);
+            return ResponseEntity.ok().header("Access-Control-Allow-Origin", "*").body(turnos);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

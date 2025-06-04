@@ -19,7 +19,8 @@ public interface TurnoRepository extends JpaRepository<Turno, Integer> {
     List<Turno> findByProfesionalIdAndFechaBetween(
         @Param("profesionalId") Integer profesionalId,
         @Param("fechaInicio") LocalDateTime fechaInicio,
-        @Param("fechaFin") LocalDateTime fechaFin);
+        @Param("fechaFin") LocalDateTime fechaFin
+    );
     
     boolean existsByProfesionalIdAndFechaAndEstadoIn(
         Integer profesionalId, 
@@ -27,8 +28,15 @@ public interface TurnoRepository extends JpaRepository<Turno, Integer> {
         List<Turno.EstadoTurno> estados
     );
 
-    // ——> Este es el método que permite buscar por nombre de profesional:
+    // Búsqueda por nombre de profesional (ya existente)
     @Query("SELECT t FROM Turno t JOIN t.profesional p " +
            "WHERE LOWER(p.nombre) LIKE LOWER(CONCAT('%', :nombreProfesional, '%'))")
     List<Turno> findByProfesionalNombre(@Param("nombreProfesional") String nombreProfesional);
+
+    // ——> Nuevo: búsqueda solo por nombre de obra social
+    @Query("SELECT t FROM Turno t " +
+           "JOIN t.usuario u " +
+           "JOIN u.obrasSociales os " +
+           "WHERE LOWER(os.nombreObraSocial) LIKE LOWER(CONCAT('%', :nombreOS, '%'))")
+    List<Turno> findByObraSocialNombre(@Param("nombreOS") String nombreOS);
 }

@@ -23,7 +23,7 @@ public class TurnoServiceImpl implements TurnoService {
 
     @Override
     public TurnoResponseDTO createTurno(CrearTurnoDTO turnoDTO) {
-        Profesional profesional = profesionalRepository.findById(turnoDTO.getProfesionalId())
+        var profesional = profesionalRepository.findById(turnoDTO.getProfesionalId())
             .orElseThrow(() -> new RuntimeException("Profesional no encontrado"));
 
         if (turnoRepository.existsByFechaAndProfesionalId(turnoDTO.getFecha(), turnoDTO.getProfesionalId())) {
@@ -35,13 +35,13 @@ public class TurnoServiceImpl implements TurnoService {
         nuevoTurno.setProfesional(profesional);
         nuevoTurno.setEstado(turnoDTO.getEstado());
 
-        Turno turnoGuardado = turnoRepository.save(nuevoTurno);
+        var turnoGuardado = turnoRepository.save(nuevoTurno);
         return convertToDTO(turnoGuardado);
     }
 
     @Override
     public List<TurnoResponseDTO> getTurnosPorProfesional(Integer profesionalId, LocalDateTime fechaInicio, LocalDateTime fechaFin) {
-        List<Turno> turnos = turnoRepository.findByProfesionalIdAndFechaBetween(profesionalId, fechaInicio, fechaFin);
+        var turnos = turnoRepository.findByProfesionalIdAndFechaBetween(profesionalId, fechaInicio, fechaFin);
         return turnos.stream()
             .map(this::convertToDTO)
             .collect(Collectors.toList());
@@ -49,7 +49,7 @@ public class TurnoServiceImpl implements TurnoService {
 
     @Override
     public TurnoResponseDTO getTurnoById(Integer id) {
-        Turno turno = turnoRepository.findById(id)
+        var turno = turnoRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Turno no encontrado"));
         return convertToDTO(turno);
     }
@@ -61,16 +61,15 @@ public class TurnoServiceImpl implements TurnoService {
 
     @Override
     public TurnoResponseDTO reservarTurno(ReservaTurnoDTO reservaDTO) {
-        Turno turno = turnoRepository.findById(reservaDTO.getTurnoId())
+        var turno = turnoRepository.findById(reservaDTO.getTurnoId())
             .orElseThrow(() -> new RuntimeException("Turno no encontrado"));
-        
-        // Verificar si ya hay un turno reservado/completado para ese profesional en esa fecha
+
         boolean turnoExistente = turnoRepository.existsByProfesionalIdAndFechaAndEstadoIn(
             turno.getProfesional().getId(),
             turno.getFecha(),
             List.of(Turno.EstadoTurno.RESERVADO, Turno.EstadoTurno.COMPLETADO)
         );
-        
+
         if (turnoExistente) {
             throw new TurnoYaReservadoException("Ya existe un turno reservado para este profesional en ese horario");
         }
@@ -79,15 +78,14 @@ public class TurnoServiceImpl implements TurnoService {
             throw new TurnoYaReservadoException("El turno ya no está disponible");
         }
 
-        User usuario = userRepository.findById(reservaDTO.getUsuarioId())
+        var usuario = userRepository.findById(reservaDTO.getUsuarioId())
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         turno.setUsuario(usuario);
         turno.setEstado(Turno.EstadoTurno.RESERVADO);
 
-        Turno turnoActualizado = turnoRepository.save(turno);
-        
-        // Crear notificación
+        var turnoActualizado = turnoRepository.save(turno);
+
         String mensaje = "Has reservado un turno para el día " + turnoActualizado.getFecha();
         notificacionService.crearNotificacion(mensaje, turnoActualizado, usuario);
 
@@ -104,28 +102,25 @@ public class TurnoServiceImpl implements TurnoService {
 
     @Override
     public TurnoResponseDTO cancelarTurno(Integer turnoId, Long usuarioId) {
-        Turno turno = turnoRepository.findById(turnoId)
+        var turno = turnoRepository.findById(turnoId)
             .orElseThrow(() -> new RuntimeException("Turno no encontrado"));
-        
-        // Guardar el usuario antes de eliminarlo para la notificación
-        User usuario = turno.getUsuario();
-        
-        // Restablecer el turno como disponible
+
+        var usuario = turno.getUsuario();
+
         turno.setEstado(Turno.EstadoTurno.DISPONIBLE);
         turno.setUsuario(null);
-        
-        Turno turnoActualizado = turnoRepository.save(turno);
-        
-        // Crear notificación de cancelación
+
+        var turnoActualizado = turnoRepository.save(turno);
+
         String mensaje = "Tu turno para el día " + turnoActualizado.getFecha() + " ha sido cancelado";
         notificacionService.crearNotificacion(mensaje, turnoActualizado, usuario);
-        
+
         return convertToDTO(turnoActualizado);
     }
 
     // Helper para convertir Turno → TurnoResponseDTO
     public TurnoResponseDTO convertToDTO(Turno turno) {
-        TurnoResponseDTO dto = new TurnoResponseDTO();
+        var dto = new TurnoResponseDTO();
         dto.setId(turno.getId());
         dto.setFecha(turno.getFecha());
         dto.setEstado(turno.getEstado().name());
@@ -141,9 +136,9 @@ public class TurnoServiceImpl implements TurnoService {
         return dto;
     }
 
-    // ——> Helper para convertir Turno → TurnoDTO (para la búsqueda)
+    // Helper para convertir Turno → TurnoDTO (para búsquedas)
     public TurnoDTO convertToTurnoDTO(Turno turno) {
-        TurnoDTO dto = new TurnoDTO();
+        var dto = new TurnoDTO();
         dto.setId(turno.getId());
         dto.setFecha(turno.getFecha());
         dto.setProfesionalId(turno.getProfesional().getId());
@@ -151,15 +146,31 @@ public class TurnoServiceImpl implements TurnoService {
         dto.setEspecialidad_de_profesional(turno.getProfesional().getEspecialidad());
         if (turno.getUsuario() != null) {
             dto.setUsuarioId(turno.getUsuario().getId());
+            dto.setEstado(turno.getEstado().name());
+            // Tomamos la primera obra social (cada usuario solo tiene una, en tu modelo)
+            var obras = turno.getUsuario().getObrasSociales();
+            if (obras != null && !obras.isEmpty()) {
+                dto.setObraSocialNombre(obras.get(0).getNombreObraSocial());
+            }
+        } else {
+            dto.setEstado(turno.getEstado().name());
         }
-        dto.setEstado(turno.getEstado().name());
         return dto;
     }
 
-    // ——> Implementación del método de búsqueda por nombre de profesional
+    // Búsqueda solo por nombre de profesional (existente)
     @Override
     public List<TurnoDTO> buscarTurnosPorNombreProfesional(String nombreProfesional) {
-        List<Turno> turnos = turnoRepository.findByProfesionalNombre(nombreProfesional);
+        var turnos = turnoRepository.findByProfesionalNombre(nombreProfesional);
+        return turnos.stream()
+            .map(this::convertToTurnoDTO)
+            .collect(Collectors.toList());
+    }
+
+    // ——> Búsqueda solo por nombre de obra social (nuevo)
+    @Override
+    public List<TurnoDTO> buscarTurnosPorObraSocial(String nombreObraSocial) {
+        var turnos = turnoRepository.findByObraSocialNombre(nombreObraSocial);
         return turnos.stream()
             .map(this::convertToTurnoDTO)
             .collect(Collectors.toList());

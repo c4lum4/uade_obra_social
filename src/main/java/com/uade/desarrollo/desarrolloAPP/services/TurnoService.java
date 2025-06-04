@@ -17,6 +17,9 @@ public interface TurnoService {
     List<TurnoResponseDTO> listarTurnosDisponiblesPorProfesional(Integer profesionalId);
     TurnoResponseDTO cancelarTurno(Integer turnoId, Long usuarioId);
     
-    // ——> Firma del método nuevo:
+    // Búsqueda por nombre de profesional (existente)
     List<TurnoDTO> buscarTurnosPorNombreProfesional(String nombreProfesional);
+
+    // ——> Nuevo: búsqueda solo por nombre de obra social
+    List<TurnoDTO> buscarTurnosPorObraSocial(String nombreObraSocial);
 }

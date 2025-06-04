@@ -12,5 +12,7 @@ public class TurnoDTO {
     private String especialidad_de_profesional;
     private Long usuarioId;
     private String estado;
-}
 
+    // Nuevo campo: nombre de la obra social asociada al usuario que reservó
+    private String obraSocialNombre;
+}
