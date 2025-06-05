@@ -8,6 +8,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -41,22 +42,26 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                // Endpoints públicos
                 .requestMatchers(
+                    "/users/register",
+                    "/users/login",
                     "/api/auth/**",
                     "/login",
-                    "/api/profesionales/**",
                     "/api/turnos/buscar/profesional",
+                    "/api/profesionales/**",
                     "/api/turnos/**",
-                    "/users/**",
-                    "/css/**",
-                    "/js/**",
-                    "/images/**",
+                    "/api/disponibilidades/**",
                     "/api/password-reset/**",
-                    "/api/disponibilidades/**"
+                    "/css/**", "/js/**", "/images/**"
                 ).permitAll()
+
+                // Todo lo demás requiere JWT válido
                 .anyRequest().authenticated()
             )
+            // Filtro JWT antes del filtro de autenticación por username
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -65,11 +70,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("*"));
+        configuration.setAllowedOrigins(List.of("*")); // En producción limitá esto
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("Authorization"));
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

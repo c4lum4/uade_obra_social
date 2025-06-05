@@ -4,12 +4,14 @@ import com.uade.desarrollo.desarrolloAPP.entity.User;
 import com.uade.desarrollo.desarrolloAPP.entity.dto.UserRequest;
 import com.uade.desarrollo.desarrolloAPP.exceptions.UserDuplicateException;
 import com.uade.desarrollo.desarrolloAPP.exceptions.UserWrongPasswordException;
+import com.uade.desarrollo.desarrolloAPP.repository.PasswordResetTokenRepository;
 import com.uade.desarrollo.desarrolloAPP.services.UserService;
 import jakarta.validation.Valid;
 
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -23,6 +25,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private PasswordResetTokenRepository passwordResetTokenRepository;
 
     @PostMapping("/register")
     public ResponseEntity<Object> registerUser(@Valid @RequestBody UserRequest userRequest) throws UserDuplicateException {
@@ -73,18 +78,32 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> deleteUser(@PathVariable Long id) {
+        // Obtener usuario autenticado desde el contexto de seguridad
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        System.out.println("[DEBUG] Username autenticado: '" + username + "'");
+        Optional<User> authUserOpt = userService.findByUsername(username);
+        if (authUserOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Usuario no autenticado"));
+        }
+        User authUser = authUserOpt.get();
+        System.out.println("[DEBUG] ID usuario autenticado: " + authUser.getId() + ", ID a borrar: " + id);
+        if (!authUser.getId().equals(id)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                                .body(Map.of("error", "No tenés permiso para eliminar otra cuenta"));
+        }
         Optional<User> user = userService.findById(id);
         if (user.isEmpty()) {
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("error", "Usuario no encontrado");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .body(Map.of("error", "Usuario no encontrado"));
         }
-
+        // Eliminar tokens de reseteo de contraseña asociados
+        passwordResetTokenRepository.findAll().stream()
+            .filter(token -> token.getUser().getId().equals(id))
+            .forEach(token -> passwordResetTokenRepository.delete(token));
         userService.deleteUserById(id);
-        Map<String, String> successResponse = new HashMap<>();
-        successResponse.put("message", "Usuario eliminado correctamente");
-        return ResponseEntity.ok(successResponse);
+        return ResponseEntity.ok(Map.of("message", "Usuario eliminado correctamente"));
     }
+
 
     @PutMapping("/{id}")
     public ResponseEntity<Object> updateUser(@PathVariable Long id, @RequestBody User updatedUser) {

@@ -48,17 +48,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 String username = jwtUtil.extractUsername(token);
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities()
-                );
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-            }
-        } catch (Exception e) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+                UsernamePasswordAuthenticationToken authenticationToken =
+                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
-        filterChain.doFilter(request, response);
+                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+        }
+}   catch (Exception e) {
+    // Loggear el error si querés, pero dejar pasar la request igual
+    System.out.println("Error al validar token: " + e.getMessage());
+    // NO hacer return acá
+}
+filterChain.doFilter(request, response);  // Siempre dejar que siga
+
     }
 
     @Override
@@ -69,6 +70,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                path.startsWith("/api/profesionales") ||
                path.startsWith("/api/turnos") ||
                path.contains("/api/turnos/buscar/profesional") ||
-               path.startsWith("/api/disponibilidades");
+               path.startsWith("/api/disponibilidades") ||
+               path.startsWith("/api/password-reset");
     }
 }

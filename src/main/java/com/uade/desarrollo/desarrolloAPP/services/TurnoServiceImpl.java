@@ -38,6 +38,33 @@ public class TurnoServiceImpl implements TurnoService {
         var turnoGuardado = turnoRepository.save(nuevoTurno);
         return convertToDTO(turnoGuardado);
     }
+    @Override
+    public void generarTurnosDesdeDisponibilidad(Integer profesionalId) {
+    Profesional profesional = profesionalRepository.findById(profesionalId)
+        .orElseThrow(() -> new RuntimeException("Profesional no encontrado"));
+
+    List<Disponibilidad> disponibilidades = profesional.getDisponibilidades();
+
+    for (Disponibilidad disponibilidad : disponibilidades) {
+        LocalDateTime inicio = disponibilidad.getFecha();
+        LocalDateTime fin = inicio.plusHours(1); // Asumimos 1 hora por disponibilidad
+        LocalDateTime actual = inicio;
+
+        while (actual.isBefore(fin)) {
+            // Validar que no exista ya un turno en ese horario
+            boolean existe = turnoRepository.existsByFechaAndProfesionalId(actual, profesionalId);
+            if (!existe) {
+                Turno turno = new Turno();
+                turno.setFecha(actual);
+                turno.setProfesional(profesional);
+                turno.setEstado(Turno.EstadoTurno.DISPONIBLE);
+                turnoRepository.save(turno);
+            }
+            actual = actual.plusMinutes(30);
+        }
+    }
+}
+
 
     @Override
     public List<TurnoResponseDTO> getTurnosPorProfesional(Integer profesionalId, LocalDateTime fechaInicio, LocalDateTime fechaFin) {
@@ -53,6 +80,13 @@ public class TurnoServiceImpl implements TurnoService {
             .orElseThrow(() -> new RuntimeException("Turno no encontrado"));
         return convertToDTO(turno);
     }
+    @Override
+    public List<TurnoResponseDTO> buscarPorEspecialidad(String especialidad) {
+    List<Turno> turnos = turnoRepository.findByEspecialidad(especialidad);
+    return turnos.stream()
+            .map(this::convertToDTO)
+            .collect(Collectors.toList());
+}
 
     @Override
     public void deleteTurnoById(Integer id) {

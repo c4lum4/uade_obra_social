@@ -21,6 +21,10 @@ public interface TurnoRepository extends JpaRepository<Turno, Integer> {
         @Param("fechaInicio") LocalDateTime fechaInicio,
         @Param("fechaFin") LocalDateTime fechaFin
     );
+
+    @Query("SELECT t FROM Turno t WHERE t.profesional.especialidad = :especialidad")
+    List<Turno> findByEspecialidad(@Param("especialidad") String especialidad);
+
     
     boolean existsByProfesionalIdAndFechaAndEstadoIn(
         Integer profesionalId, 

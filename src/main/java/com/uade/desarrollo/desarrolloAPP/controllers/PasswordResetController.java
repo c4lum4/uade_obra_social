@@ -24,7 +24,9 @@ public class PasswordResetController {
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
-    private EmailService emailService;    @PostMapping("/request")
+    private EmailService emailService;   
+    
+    @PostMapping("/request")
     public ResponseEntity<?> requestPasswordReset(@RequestBody Map<String, String> body) {
         String email = body.get("email");
         Optional<User> userOpt = userRepository.findByEmail(email);
@@ -82,6 +84,21 @@ public class PasswordResetController {
         return ResponseEntity.ok(Map.of(
             "success", true,
             "message", "Contraseña actualizada correctamente"
+        ));
+    }
+
+    @GetMapping("/validate")
+    public ResponseEntity<?> validateToken(@RequestParam String token) {
+        Optional<PasswordResetToken> tokenOpt = tokenRepository.findByToken(token);
+        if (tokenOpt.isEmpty() || tokenOpt.get().isExpired() || tokenOpt.get().isUsed()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "message", "Token inválido o expirado"
+            ));
+        }
+        return ResponseEntity.ok(Map.of(
+            "success", true,
+            "message", "Token válido"
         ));
     }
 }

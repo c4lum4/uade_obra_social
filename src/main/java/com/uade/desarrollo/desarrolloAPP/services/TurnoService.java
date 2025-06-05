@@ -13,10 +13,12 @@ public interface TurnoService {
     List<TurnoResponseDTO> getTurnosPorProfesional(Integer profesionalId, LocalDateTime fechaInicio, LocalDateTime fechaFin);
     TurnoResponseDTO getTurnoById(Integer id);
     void deleteTurnoById(Integer id);
+    void generarTurnosDesdeDisponibilidad(Integer profesionalId);
     TurnoResponseDTO reservarTurno(ReservaTurnoDTO reservaDTO);
     List<TurnoResponseDTO> listarTurnosDisponiblesPorProfesional(Integer profesionalId);
     TurnoResponseDTO cancelarTurno(Integer turnoId, Long usuarioId);
-    
+    List<TurnoResponseDTO> buscarPorEspecialidad(String especialidad);
+
     // Búsqueda por nombre de profesional (existente)
     List<TurnoDTO> buscarTurnosPorNombreProfesional(String nombreProfesional);
 

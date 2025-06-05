@@ -42,6 +42,16 @@ public class TurnoController {
         var lista = turnoService.getTurnosPorProfesional(profesionalId, fechaInicio, fechaFin);
         return ResponseEntity.ok(lista);
     }
+    @PostMapping("/generar-turnos")
+    public ResponseEntity<?> generarTurnosDesdeDisponibilidad(@RequestBody GenerarTurnosDTO dto) {
+    try {
+        turnoService.generarTurnosDesdeDisponibilidad(dto.getProfesionalId());
+        return ResponseEntity.ok(Map.of("mensaje", "Turnos generados exitosamente"));
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(Map.of("mensaje", "Error al generar turnos: " + e.getMessage()));
+    }
+}
 
     @GetMapping("/{id}")
     public ResponseEntity<TurnoResponseDTO> getTurnoById(@PathVariable Integer id) {
@@ -114,6 +124,11 @@ public class TurnoController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+    @GetMapping("/especialidad/{especialidad}")
+    public ResponseEntity<List<TurnoResponseDTO>> buscarDisponiblesPorEspecialidad(@PathVariable String especialidad) {
+    return ResponseEntity.ok(turnoService.buscarPorEspecialidad(especialidad));
+}
+
 
     // ——> Nuevo endpoint: buscar solo por nombre de obra social
     @GetMapping("/buscar/obra-social")
