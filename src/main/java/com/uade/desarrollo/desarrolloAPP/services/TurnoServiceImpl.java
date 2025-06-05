@@ -199,14 +199,32 @@ public class TurnoServiceImpl implements TurnoService {
         return turnos.stream()
             .map(this::convertToTurnoDTO)
             .collect(Collectors.toList());
-    }
-
-    // ——> Búsqueda solo por nombre de obra social (nuevo)
-    @Override
+    }    // ——> Búsqueda solo por nombre de obra social (nuevo)    @Override
     public List<TurnoDTO> buscarTurnosPorObraSocial(String nombreObraSocial) {
         var turnos = turnoRepository.findByObraSocialNombre(nombreObraSocial);
         return turnos.stream()
             .map(this::convertToTurnoDTO)
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Obtiene todos los turnos que están en estado DISPONIBLE
+     * @return Lista de turnos disponibles convertidos a DTOs
+     */
+    @Override
+    public List<TurnoResponseDTO> getAllTurnosDisponibles() {
+        return turnoRepository.findByEstado(Turno.EstadoTurno.DISPONIBLE)
+            .stream()
+            .map(this::convertToDTO)
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<TurnoResponseDTO> getTurnosReservadosPorUsuario(Long usuarioId) {
+        var estados = List.of(Turno.EstadoTurno.RESERVADO, Turno.EstadoTurno.COMPLETADO);
+        var turnos = turnoRepository.findByUsuarioIdAndEstadoIn(usuarioId, estados);
+        return turnos.stream()
+            .map(this::convertToDTO)
             .collect(Collectors.toList());
     }
 }

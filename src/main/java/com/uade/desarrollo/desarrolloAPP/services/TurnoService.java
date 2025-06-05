@@ -20,8 +20,12 @@ public interface TurnoService {
     List<TurnoResponseDTO> buscarPorEspecialidad(String especialidad);
 
     // Búsqueda por nombre de profesional (existente)
-    List<TurnoDTO> buscarTurnosPorNombreProfesional(String nombreProfesional);
-
-    // ——> Nuevo: búsqueda solo por nombre de obra social
+    List<TurnoDTO> buscarTurnosPorNombreProfesional(String nombreProfesional);    // ——> Nuevo: búsqueda solo por nombre de obra social
     List<TurnoDTO> buscarTurnosPorObraSocial(String nombreObraSocial);
+
+    // Buscar todos los turnos disponibles
+    List<TurnoResponseDTO> getAllTurnosDisponibles();
+
+    // Buscar turnos reservados por un usuario
+    List<TurnoResponseDTO> getTurnosReservadosPorUsuario(Long usuarioId);
 }

@@ -43,14 +43,16 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
+            .authorizeHttpRequests((auth) -> auth
                 // Endpoints públicos
                 .requestMatchers(
                     "/users/register",
                     "/users/login",
+                    "/users/get-user-by-username",
                     "/api/auth/**",
                     "/login",
                     "/api/turnos/buscar/profesional",
+                    "/api/turnos/usuario/**",
                     "/api/profesionales/**",
                     "/api/turnos/**",
                     "/api/disponibilidades/**",

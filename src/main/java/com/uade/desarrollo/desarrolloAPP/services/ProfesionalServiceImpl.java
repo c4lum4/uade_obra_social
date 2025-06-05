@@ -2,12 +2,16 @@ package com.uade.desarrollo.desarrolloAPP.services;
 
 import com.uade.desarrollo.desarrolloAPP.entity.Profesional;
 import com.uade.desarrollo.desarrolloAPP.repository.ProfesionalRepository;
+
+import jakarta.transaction.Transactional;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional
 public class ProfesionalServiceImpl implements ProfesionalService {
 
     private final ProfesionalRepository profesionalRepository;
@@ -29,7 +33,7 @@ public class ProfesionalServiceImpl implements ProfesionalService {
     @Override
     public Profesional getProfesionalById(Integer id) {
         Optional<Profesional> profesional = profesionalRepository.findById(id);
-        return profesional.orElse(null);
+        return profesional.orElseThrow(() -> new RuntimeException("Profesional no encontrado"));
     }
 
     @Override

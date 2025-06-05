@@ -10,8 +10,9 @@ import java.util.List;
 
 public interface TurnoRepository extends JpaRepository<Turno, Integer> {
     boolean existsByFechaAndProfesionalId(LocalDateTime fecha, Integer profesionalId);
+      List<Turno> findByProfesionalIdAndEstado(Integer profesionalId, Turno.EstadoTurno estado);
     
-    List<Turno> findByProfesionalIdAndEstado(Integer profesionalId, Turno.EstadoTurno estado);
+    List<Turno> findByEstado(Turno.EstadoTurno estado);
     
     @Query("SELECT t FROM Turno t WHERE t.profesional.id = :profesionalId " +
            "AND (:fechaInicio IS NULL OR t.fecha >= :fechaInicio) " +
@@ -43,4 +44,7 @@ public interface TurnoRepository extends JpaRepository<Turno, Integer> {
            "JOIN u.obrasSociales os " +
            "WHERE LOWER(os.nombreObraSocial) LIKE LOWER(CONCAT('%', :nombreOS, '%'))")
     List<Turno> findByObraSocialNombre(@Param("nombreOS") String nombreOS);
+
+    // Buscar turnos por ID de usuario
+    List<Turno> findByUsuarioIdAndEstadoIn(Long usuarioId, List<Turno.EstadoTurno> estados);
 }

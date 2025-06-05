@@ -1,6 +1,7 @@
 package com.uade.desarrollo.desarrolloAPP.controllers;
 
 import com.uade.desarrollo.desarrolloAPP.entity.User;
+import com.uade.desarrollo.desarrolloAPP.entity.dto.UserProfileDTO;
 import com.uade.desarrollo.desarrolloAPP.entity.dto.UserRequest;
 import com.uade.desarrollo.desarrolloAPP.exceptions.UserDuplicateException;
 import com.uade.desarrollo.desarrolloAPP.exceptions.UserWrongPasswordException;
@@ -63,12 +64,25 @@ public class UserController {
         } else {
             throw new UserWrongPasswordException();
         }
-    }
-
-    @GetMapping("/get-user-by-username")
-    public ResponseEntity<User> getUser(@RequestParam String username) {
-        Optional<User> user = userService.findByUsername(username);
-        return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }    @GetMapping("/get-user-by-username")
+    public ResponseEntity<?> getUser(@RequestParam String username) {
+        Optional<User> userOpt = userService.findByUsername(username);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("mensaje", "Usuario no encontrado"));
+        }
+        
+        User user = userOpt.get();
+        UserProfileDTO dto = new UserProfileDTO();
+        dto.setId(user.getId());
+        dto.setUsername(user.getUsername());
+        dto.setEmail(user.getEmail());
+        dto.setName(user.getName());
+        dto.setSurname(user.getSurname());
+        dto.setHome_address(user.getHome_address());
+        dto.setPhone_number(user.getPhone_number());
+        
+        return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/get-all-users")

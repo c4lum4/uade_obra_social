@@ -128,10 +128,7 @@ public class TurnoController {
     public ResponseEntity<List<TurnoResponseDTO>> buscarDisponiblesPorEspecialidad(@PathVariable String especialidad) {
     return ResponseEntity.ok(turnoService.buscarPorEspecialidad(especialidad));
 }
-
-
-    // ——> Nuevo endpoint: buscar solo por nombre de obra social
-    @GetMapping("/buscar/obra-social")
+    // ——> Nuevo endpoint: buscar solo por nombre de obra social    @GetMapping("/buscar/obra-social")
     @CrossOrigin(origins = "*", methods = {RequestMethod.GET})
     public ResponseEntity<List<TurnoDTO>> buscarTurnosPorObraSocial(
             @RequestParam(name = "obraSocial", required = true) String obraSocial) {
@@ -140,6 +137,39 @@ public class TurnoController {
             return ResponseEntity.ok().header("Access-Control-Allow-Origin", "*").body(turnos);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Obtiene todos los turnos que están en estado DISPONIBLE
+     * @return Lista de turnos disponibles o mensaje de error si ocurre algún problema
+     */
+    @GetMapping("/disponibles")
+    @CrossOrigin(origins = "*", methods = {RequestMethod.GET})
+    public ResponseEntity<?> getAllTurnosDisponibles() {
+        try {
+            var turnos = turnoService.getAllTurnosDisponibles();
+            if (turnos.isEmpty()) {
+                return ResponseEntity.ok()
+                    .body(Map.of("mensaje", "No hay turnos disponibles en este momento"));
+            }
+            return ResponseEntity.ok()
+                .header("Access-Control-Allow-Origin", "*")
+                .body(turnos);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("mensaje", "Error al obtener los turnos disponibles: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/usuario/{usuarioId}")
+    public ResponseEntity<?> getTurnosReservadosPorUsuario(@PathVariable Long usuarioId) {
+        try {
+            var turnos = turnoService.getTurnosReservadosPorUsuario(usuarioId);
+            return ResponseEntity.ok(turnos);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("mensaje", "Error al obtener los turnos: " + e.getMessage()));
         }
     }
 }
