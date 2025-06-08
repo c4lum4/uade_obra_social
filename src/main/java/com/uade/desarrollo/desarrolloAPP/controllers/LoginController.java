@@ -40,7 +40,7 @@ public class LoginController {
 
             return ResponseEntity.ok(response);
         } else {
-            throw new RuntimeException("Credenciales incorrectas");
+            throw new com.uade.desarrollo.desarrolloAPP.exceptions.BusinessException("Credenciales incorrectas");
         }
     }
 }

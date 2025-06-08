@@ -28,7 +28,7 @@ public class ProfesionalController {
             ProfesionalDTO dto = convertToDTO(createdProfesional);
             return ResponseEntity.created(URI.create("/api/profesionales/" + dto.getId())).body(dto);
         } catch (Exception e) {
-            throw new RuntimeException("Error al crear profesional");
+            throw new com.uade.desarrollo.desarrolloAPP.exceptions.BusinessException("Error al crear profesional");
         }
     }
 

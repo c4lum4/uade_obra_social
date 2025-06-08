@@ -30,6 +30,9 @@ public class UserController {
     @Autowired
     private PasswordResetTokenRepository passwordResetTokenRepository;
 
+    @Autowired
+    private com.uade.desarrollo.desarrolloAPP.repository.TurnoRepository turnoRepository;
+
     @PostMapping("/register")
     public ResponseEntity<Object> registerUser(@Valid @RequestBody UserRequest userRequest) throws UserDuplicateException {
         if (userService.findByUsername(userRequest.getUsername()).isPresent()) {
@@ -92,29 +95,42 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> deleteUser(@PathVariable Long id) {
+        System.out.println("[DEBUG] Entró al método deleteUser con id: " + id);
         // Obtener usuario autenticado desde el contexto de seguridad
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        System.out.println("[DEBUG] Username autenticado: '" + username + "'");
+        System.out.println("[DEBUG] Username autenticado: " + username);
         Optional<User> authUserOpt = userService.findByUsername(username);
         if (authUserOpt.isEmpty()) {
+            System.out.println("[DEBUG] Usuario autenticado no encontrado en base de datos");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Usuario no autenticado"));
         }
         User authUser = authUserOpt.get();
         System.out.println("[DEBUG] ID usuario autenticado: " + authUser.getId() + ", ID a borrar: " + id);
+        // Validar que el usuario autenticado sea el mismo que el que quiere borrar
         if (!authUser.getId().equals(id)) {
+            System.out.println("[DEBUG] El usuario autenticado no coincide con el ID a borrar");
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                                .body(Map.of("error", "No tenés permiso para eliminar otra cuenta"));
+                    .body(Map.of("error", "No tenés permiso para eliminar otra cuenta. Solo puedes eliminar tu propia cuenta."));
         }
         Optional<User> user = userService.findById(id);
         if (user.isEmpty()) {
+            System.out.println("[DEBUG] Usuario a borrar no encontrado en base de datos");
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                                .body(Map.of("error", "Usuario no encontrado"));
+                    .body(Map.of("error", "Usuario no encontrado"));
         }
+        // Liberar turnos reservados por el usuario
+        var turnosReservados = turnoRepository.findByUsuarioIdAndEstado(id, com.uade.desarrollo.desarrolloAPP.entity.Turno.EstadoTurno.RESERVADO);
+        for (var turno : turnosReservados) {
+            turno.setEstado(com.uade.desarrollo.desarrolloAPP.entity.Turno.EstadoTurno.DISPONIBLE);
+            turno.setUsuario(null);
+        }
+        turnoRepository.saveAll(turnosReservados);
         // Eliminar tokens de reseteo de contraseña asociados
         passwordResetTokenRepository.findAll().stream()
-            .filter(token -> token.getUser().getId().equals(id))
-            .forEach(token -> passwordResetTokenRepository.delete(token));
+                .filter(token -> token.getUser().getId().equals(id))
+                .forEach(token -> passwordResetTokenRepository.delete(token));
         userService.deleteUserById(id);
+        System.out.println("[DEBUG] Usuario eliminado correctamente");
         return ResponseEntity.ok(Map.of("message", "Usuario eliminado correctamente"));
     }
 

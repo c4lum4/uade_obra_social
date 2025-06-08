@@ -65,6 +65,37 @@ public class TurnoServiceImpl implements TurnoService {
     }
 }
 
+@Override
+public List<TurnoResponseDTO> getTurnosPorUsuario(Long usuarioId, String estado) {
+    List<Turno> turnos;
+    if (estado != null) {
+        turnos = turnoRepository.findByUsuarioIdAndEstado(usuarioId, Turno.EstadoTurno.valueOf(estado));
+    } else {
+        turnos = turnoRepository.findByUsuarioId(usuarioId);
+    }
+    return turnos.stream().map(this::convertToDTO).collect(Collectors.toList());
+}
+    
+@Override
+public List<TurnoResponseDTO> reservarMultiplesTurnos(List<ReservaTurnoDTO> reservas) {
+    List<TurnoResponseDTO> reservados = new java.util.ArrayList<>();
+    for (ReservaTurnoDTO reserva : reservas) {
+        reservados.add(reservarTurno(reserva));
+    }
+    return reservados;
+}
+
+// ...existing code...
+@Override
+public List<TurnoResponseDTO> getAllTurnos() {
+    return turnoRepository.findAll()
+        .stream()
+        .map(this::convertToDTO)
+        .collect(Collectors.toList());
+}
+// ...existing code...
+
+
 
     @Override
     public List<TurnoResponseDTO> getTurnosPorProfesional(Integer profesionalId, LocalDateTime fechaInicio, LocalDateTime fechaFin) {

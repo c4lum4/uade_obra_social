@@ -66,7 +66,7 @@ public class ObraSocialController {
     public ResponseEntity<String> deleteObraSocialById(@PathVariable Integer id) {
         ObraSocial obraSocial = obraSocialService.getObraSocialById(id);
         if (obraSocial == null) {
-            throw new RuntimeException("No existe esa obra social.");
+            throw new com.uade.desarrollo.desarrolloAPP.exceptions.NotFoundException("No existe esa obra social.");
         }
         obraSocialService.deleteObraSocialById(id);
         return ResponseEntity.ok("Obra social eliminada correctamente.");

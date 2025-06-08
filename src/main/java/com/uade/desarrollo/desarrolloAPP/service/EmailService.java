@@ -13,10 +13,10 @@ public class EmailService {
 
     public void sendPasswordResetEmail(String to, String token) {
         String subject = "Recuperación de contraseña";
-        String text = "Recibiste este email porque solicitaste restablecer tu contraseña.\n\n"
-                + "Aqui tienes el token para el restablecimiento de la contraseña:\n"
+        String text = "Recibiste este mail porque solicitaste restablecer tu contraseña.\n\n"
+                + "Aqui tienes la clave para el restablecimiento de la contraseña:\n\n"
                 +   token + "\n\n"
-                + "Este token expira en 15 minutos.";
+                + "Esta clave expira en 15 minutos.";
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);

@@ -59,7 +59,8 @@ public class SecurityConfig {
                     "/api/password-reset/**",
                     "/css/**", "/js/**", "/images/**"
                 ).permitAll()
-
+                // Solo autenticado puede borrar su propio usuario (usar comodín para path variable)
+                .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/users/*").authenticated()
                 // Todo lo demás requiere JWT válido
                 .anyRequest().authenticated()
             )

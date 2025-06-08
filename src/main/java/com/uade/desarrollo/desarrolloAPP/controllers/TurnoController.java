@@ -29,7 +29,7 @@ public class TurnoController {
             return ResponseEntity.created(URI.create("/api/turnos/" + response.getId()))
                     .body(response);
         } catch (Exception e) {
-            throw new RuntimeException("Error al crear turno");
+            throw new com.uade.desarrollo.desarrolloAPP.exceptions.BusinessException("Error al crear turno");
         }
     }
 
@@ -42,6 +42,51 @@ public class TurnoController {
         var lista = turnoService.getTurnosPorProfesional(profesionalId, fechaInicio, fechaFin);
         return ResponseEntity.ok(lista);
     }
+
+    // ...existing code...
+
+@GetMapping("/todos")
+public ResponseEntity<List<TurnoResponseDTO>> getAllTurnos() {
+    var turnos = turnoService.getAllTurnos();
+    return ResponseEntity.ok(turnos);
+}
+
+// ...existing code...
+
+
+
+
+@GetMapping("/usuario/{usuarioId}/todos")
+public ResponseEntity<?> getTodosLosTurnosPorUsuario(
+        @PathVariable Long usuarioId,
+        @RequestParam(required = false) String estado) {
+    try {
+        var turnos = turnoService.getTurnosPorUsuario(usuarioId, estado);
+        return ResponseEntity.ok(turnos);
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("mensaje", "Error al obtener los turnos: " + e.getMessage()));
+    }
+}
+
+   
+
+@PostMapping("/reservar-multiple")
+public ResponseEntity<?> reservarMultiplesTurnos(@RequestBody List<ReservaTurnoDTO> reservas) {
+    try {
+        var turnos = turnoService.reservarMultiplesTurnos(reservas);
+        return ResponseEntity.ok(Map.of(
+                "mensaje", "Turnos reservados exitosamente",
+                "turnos", turnos
+        ));
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("mensaje", "No se pudieron reservar los turnos: " + e.getMessage()));
+    }
+}
+
+
+
     @PostMapping("/generar-turnos")
     public ResponseEntity<?> generarTurnosDesdeDisponibilidad(@RequestBody GenerarTurnosDTO dto) {
     try {
@@ -58,7 +103,7 @@ public class TurnoController {
         try {
             return ResponseEntity.ok(turnoService.getTurnoById(id));
         } catch (Exception e) {
-            throw new RuntimeException("Turno no encontrado");
+            throw new com.uade.desarrollo.desarrolloAPP.exceptions.NotFoundException("Turno no encontrado");
         }
     }
 
@@ -68,7 +113,7 @@ public class TurnoController {
             turnoService.deleteTurnoById(id);
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
-            throw new RuntimeException("No se pudo eliminar el turno");
+            throw new com.uade.desarrollo.desarrolloAPP.exceptions.BusinessException("No se pudo eliminar el turno");
         }
     }
 

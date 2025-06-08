@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/password-reset")
@@ -39,21 +38,20 @@ public class PasswordResetController {
         }
 
         User user = userOpt.get();
-        
         // Invalidar tokens anteriores
         Optional<PasswordResetToken> existingToken = tokenRepository.findByUserEmail(email);
         existingToken.ifPresent(token -> tokenRepository.delete(token));
 
-        // Crear nuevo token
-        String token = UUID.randomUUID().toString();
+        // Generar token numérico de 6 dígitos
+        String token = String.format("%06d", (int)(Math.random() * 1000000));
         PasswordResetToken resetToken = new PasswordResetToken(token, user);
-        tokenRepository.save(resetToken);        // Simular envío de email
+        tokenRepository.save(resetToken);
         emailService.sendPasswordResetEmail(user.getEmail(), token);
 
         return ResponseEntity.ok(Map.of(
             "success", true,
             "message", "Se ha enviado un email con las instrucciones para restablecer la contraseña",
-            "token", token  // Agregamos el token a la respuesta
+            "token", token
         ));
     }
 
