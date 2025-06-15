@@ -42,6 +42,9 @@ public class User {
     @Column
     private String phone_number;
 
+    @Column
+    private String fotoPerfilUrl;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<ObraSocial> obrasSociales;

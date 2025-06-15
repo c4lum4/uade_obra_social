@@ -10,4 +10,5 @@ public class NotificacionDTO {
     private LocalDateTime fecha;
     private Integer turnoId;
     private Long usuarioId;
+    private boolean leida; 
 }

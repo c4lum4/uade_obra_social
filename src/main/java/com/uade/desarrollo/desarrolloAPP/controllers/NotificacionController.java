@@ -33,6 +33,12 @@ public class NotificacionController {
         return notificaciones.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
+    @PutMapping("/usuario/{usuarioId}/marcar-leidas")
+    public ResponseEntity<?> marcarNotificacionesComoLeidas(@PathVariable Long usuarioId) {
+    notificacionService.marcarTodasComoLeidas(usuarioId);
+    return ResponseEntity.ok().body(Map.of("mensaje", "Notificaciones marcadas como leídas"));
+    }
+
     // GET /api/notificaciones
     @GetMapping
     public List<NotificacionDTO> getTodasLasNotificaciones() {
@@ -77,13 +83,24 @@ public class NotificacionController {
         }
     }
 
-    private NotificacionDTO convertToDTO(Notificacion notificacion) {
-        NotificacionDTO dto = new NotificacionDTO();
-        dto.setId(notificacion.getId());
-        dto.setMensaje(notificacion.getMensaje());
-        dto.setFecha(notificacion.getFecha());
-        dto.setTurnoId(notificacion.getTurno().getId());
-        dto.setUsuarioId(notificacion.getUsuario().getId());
-        return dto;
+    // GET /api/notificaciones/{id}
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getNotificacionById(@PathVariable Integer id) {
+        var notificacion = notificacionService.getNotificacionById(id);
+        if (notificacion == null) {
+            throw new com.uade.desarrollo.desarrolloAPP.exceptions.NotFoundException("No se encontró la notificación con ID: " + id);
+        }
+        return ResponseEntity.ok(convertToDTO(notificacion));
     }
+
+    private NotificacionDTO convertToDTO(Notificacion notificacion) {
+    NotificacionDTO dto = new NotificacionDTO();
+    dto.setId(notificacion.getId());
+    dto.setMensaje(notificacion.getMensaje());
+    dto.setFecha(notificacion.getFecha());
+    dto.setTurnoId(notificacion.getTurno().getId());
+    dto.setUsuarioId(notificacion.getUsuario().getId());
+    dto.setLeida(notificacion.isLeida()); 
+    return dto;
+}
 }

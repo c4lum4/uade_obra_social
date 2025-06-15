@@ -11,4 +11,5 @@ public class UserProfileDTO {
     private String surname;
     private String home_address;
     private String phone_number;
+    private String fotoPerfilUrl;
 }

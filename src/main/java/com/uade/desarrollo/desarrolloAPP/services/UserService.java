@@ -21,5 +21,7 @@ public interface UserService {
     void deleteUserById(Long id);
 
     void save(User user);
+
+    String actualizarFotoPerfil(Long id, org.springframework.web.multipart.MultipartFile file);
 }
 

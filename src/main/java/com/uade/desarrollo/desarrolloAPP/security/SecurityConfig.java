@@ -57,7 +57,9 @@ public class SecurityConfig {
                     "/api/turnos/**",
                     "/api/disponibilidades/**",
                     "/api/password-reset/**",
-                    "/css/**", "/js/**", "/images/**"
+                    "/css/**", "/js/**", "/images/**",
+                    "/uploads/**", // Permitir acceso público a imágenes
+                    "/users/*/foto-perfil" // Permitir PUT/POST de foto de perfil
                 ).permitAll()
                 // Solo autenticado puede borrar su propio usuario (usar comodín para path variable)
                 .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/users/*").authenticated()
@@ -77,6 +79,7 @@ public class SecurityConfig {
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("Authorization"));
+        configuration.setAllowCredentials(true); // Permitir credenciales para multipart
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

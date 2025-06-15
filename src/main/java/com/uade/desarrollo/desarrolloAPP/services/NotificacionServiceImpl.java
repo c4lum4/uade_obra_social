@@ -26,6 +26,14 @@ public class NotificacionServiceImpl implements NotificacionService {
         notificacion.setUsuario(usuario);
         return notificacionRepository.save(notificacion);
     }
+    @Override
+    public void marcarTodasComoLeidas(Long usuarioId) {
+    List<Notificacion> notificaciones = notificacionRepository.findByUsuarioId(usuarioId);
+    for (Notificacion n : notificaciones) {
+        n.setLeida(true);
+    }
+    notificacionRepository.saveAll(notificaciones);
+}
 
     @Override
     public List<Notificacion> getNotificacionesPorUsuario(Long usuarioId) {
@@ -40,7 +48,7 @@ public class NotificacionServiceImpl implements NotificacionService {
     @Override
     public Notificacion getNotificacionById(Integer id) {
         return notificacionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Notificación no encontrada con ID: " + id));
+                .orElseThrow(() -> new com.uade.desarrollo.desarrolloAPP.exceptions.NotFoundException("No se encontró la notificación con ID: " + id));
     }
 
     @Override

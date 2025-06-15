@@ -13,6 +13,7 @@ public interface NotificacionService {
     List<Notificacion> getTodasLasNotificaciones();
     Notificacion getNotificacionById(Integer id);
     void deleteNotificacionById(Integer id);
+    void marcarTodasComoLeidas(Long usuarioId);
     List<Notificacion> getNotificacionesPorTurno(Integer turnoId);
     List<Notificacion> getNotificacionesPorUsuarioYTurno(Long usuarioId, Integer turnoId);
 

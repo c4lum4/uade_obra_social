@@ -19,6 +19,9 @@ public class Notificacion {
     @Column(nullable = false)
     private LocalDateTime fecha;
 
+    @Column(nullable = false)
+    private boolean leida = false; // <--- NUEVO CAMPO
+
     @ManyToOne
     @JoinColumn(name = "id_turno", nullable = false)
     private Turno turno;

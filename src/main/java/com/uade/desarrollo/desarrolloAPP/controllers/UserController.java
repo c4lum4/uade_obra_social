@@ -84,6 +84,7 @@ public class UserController {
         dto.setSurname(user.getSurname());
         dto.setHome_address(user.getHome_address());
         dto.setPhone_number(user.getPhone_number());
+        dto.setFotoPerfilUrl(user.getFotoPerfilUrl()); // Asegura que se incluya la URL de la foto
         
         return ResponseEntity.ok(dto);
     }
@@ -186,5 +187,41 @@ public class UserController {
 
         userService.save(existingUser);
         return ResponseEntity.ok("Campo(s) actualizado(s) correctamente");
+    }
+
+    @PutMapping("/{id}/foto-perfil")
+    public ResponseEntity<?> actualizarFotoPerfil(@PathVariable Long id, @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+        try {
+            if (file == null || file.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("mensaje", "No se recibió ningún archivo"));
+            }
+            System.out.println("[DEBUG] Nombre archivo recibido: " + file.getOriginalFilename());
+            String url = userService.actualizarFotoPerfil(id, file);
+            return ResponseEntity.ok(Map.of("mensaje", "Foto de perfil actualizada", "fotoPerfilUrl", url));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("mensaje", "Error al actualizar la foto de perfil: " + e.getMessage()));
+        }
+    }
+
+    @PutMapping("/{id}/foto-perfil-url")
+    public ResponseEntity<?> actualizarFotoPerfilUrl(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        String url = body.get("fotoPerfilUrl");
+        if (url == null || url.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("mensaje", "La URL de la foto no puede estar vacía"));
+        }
+        // Validar que la URL apunte a Firebase Storage o Cloudinary
+        if (!url.contains("firebasestorage.googleapis.com") && !url.contains("res.cloudinary.com")) {
+            return ResponseEntity.badRequest().body(Map.of("mensaje", "La URL debe ser de Firebase Storage o Cloudinary"));
+        }
+        var userOpt = userService.findById(id);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("mensaje", "Usuario no encontrado"));
+        }
+        var user = userOpt.get();
+        user.setFotoPerfilUrl(url);
+        userService.save(user);
+        return ResponseEntity.ok(Map.of("mensaje", "Foto de perfil actualizada", "fotoPerfilUrl", url));
     }
 }
