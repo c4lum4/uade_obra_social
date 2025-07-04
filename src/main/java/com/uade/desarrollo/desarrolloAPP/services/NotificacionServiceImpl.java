@@ -52,7 +52,7 @@ public class NotificacionServiceImpl implements NotificacionService {
     }
 
     @Override
-    public void deleteNotificacionById(Integer id) {
+    public void eliminarNotificacionPorId(Integer id) {
         notificacionRepository.deleteById(id);
     }
 

@@ -21,6 +21,17 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/notificaciones")
 @RequiredArgsConstructor
 public class NotificacionController {
+    // DELETE /api/notificaciones/{id}
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> eliminarNotificacion(@PathVariable Integer id) {
+        try {
+            notificacionService.eliminarNotificacionPorId(id);
+            return ResponseEntity.ok(Map.of("mensaje", "Notificación eliminada exitosamente"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("mensaje", "Error al eliminar la notificación: " + e.getMessage()));
+        }
+    }
 
     private final NotificacionService notificacionService;
     private final TurnoRepository turnoRepository;
@@ -35,8 +46,14 @@ public class NotificacionController {
 
     @PutMapping("/usuario/{usuarioId}/marcar-leidas")
     public ResponseEntity<?> marcarNotificacionesComoLeidas(@PathVariable Long usuarioId) {
-    notificacionService.marcarTodasComoLeidas(usuarioId);
-    return ResponseEntity.ok().body(Map.of("mensaje", "Notificaciones marcadas como leídas"));
+        notificacionService.marcarTodasComoLeidas(usuarioId);
+        // Obtener la lista actualizada de notificaciones del usuario
+        List<Notificacion> notificaciones = notificacionService.getNotificacionesPorUsuario(usuarioId);
+        List<NotificacionDTO> dtos = notificaciones.stream().map(this::convertToDTO).collect(Collectors.toList());
+        return ResponseEntity.ok().body(Map.of(
+            "mensaje", "Notificaciones marcadas como leídas",
+            "notificaciones", dtos
+        ));
     }
 
     // GET /api/notificaciones
