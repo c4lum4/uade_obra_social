@@ -59,8 +59,9 @@ public class SecurityConfig {
                     "/api/password-reset/**",
                     "/css/**", "/js/**", "/images/**",
                     "/uploads/**", // Permitir acceso público a imágenes
-                    "/users/*/foto-perfil" // Permitir PUT/POST de foto de perfil
-                ).permitAll()
+                    "/users/*/foto-perfil", // Permitir PUT/POST de foto de perfil
+                    "/api/historial-medico"
+                    ).permitAll()
                 // Solo autenticado puede borrar su propio usuario (usar comodín para path variable)
                 .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/users/*").authenticated()
                 // Todo lo demás requiere JWT válido

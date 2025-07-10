@@ -71,6 +71,7 @@ filterChain.doFilter(request, response);  // Siempre dejar que siga
                path.startsWith("/api/turnos") ||
                path.contains("/api/turnos/buscar/profesional") ||
                path.startsWith("/api/disponibilidades") ||
-               path.startsWith("/api/password-reset");
+               path.startsWith("/api/password-reset") ||
+               path.startsWith("/api/historial-medico");
     }
 }
