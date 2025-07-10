@@ -1,6 +1,7 @@
 package com.uade.desarrollo.desarrolloAPP.controllers;
 
 import com.uade.desarrollo.desarrolloAPP.entity.User;
+import com.uade.desarrollo.desarrolloAPP.entity.dto.ChangePasswordDTO;
 import com.uade.desarrollo.desarrolloAPP.entity.dto.UserProfileDTO;
 import com.uade.desarrollo.desarrolloAPP.entity.dto.UserRequest;
 import com.uade.desarrollo.desarrolloAPP.exceptions.UserDuplicateException;
@@ -224,4 +225,23 @@ public class UserController {
         userService.save(user);
         return ResponseEntity.ok(Map.of("mensaje", "Foto de perfil actualizada", "fotoPerfilUrl", url));
     }
+    @PutMapping("/{id}/change-password")
+    public ResponseEntity<?> changePassword(@PathVariable Long id, @RequestBody ChangePasswordDTO dto) {
+        String usernameAuth = SecurityContextHolder.getContext().getAuthentication().getName();
+        User authUser = userService.findByUsername(usernameAuth)
+                .orElseThrow(() -> new RuntimeException("Usuario autenticado no encontrado"));
+
+        if (!authUser.getId().equals(id)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("No tienes permiso para cambiar la contraseña de este usuario");
+        }
+
+        try {
+            userService.changePassword(id, dto.getCurrentPassword(), dto.getNewPassword(), dto.getConfirmNewPassword());
+            return ResponseEntity.ok("Contraseña actualizada correctamente");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }
+

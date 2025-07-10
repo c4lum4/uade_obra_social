@@ -18,17 +18,14 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    
 
     public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
-    
 
     @Override
     public User registerUser(User user) {
-    
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
@@ -37,10 +34,9 @@ public class UserServiceImpl implements UserService {
     public boolean loginUser(String username, String password) {
         Optional<User> optionalUser = userRepository.findByUsername(username);
         if (optionalUser.isEmpty()) {
-            return false; 
+            return false;
         }
         User user = optionalUser.get();
-    
         return passwordEncoder.matches(password, user.getPassword());
     }
 
@@ -77,17 +73,11 @@ public class UserServiceImpl implements UserService {
                 throw new com.uade.desarrollo.desarrolloAPP.exceptions.NotFoundException("Usuario no encontrado");
             }
             User user = userOpt.get();
-            // Carpeta donde se guardarán las fotos (puedes cambiar la ruta si lo deseas)
             String uploadDir = "uploads/fotos-perfil";
             Files.createDirectories(Paths.get(uploadDir));
-            // Nombre único para la imagen
             String filename = "user-" + id + "-" + UUID.randomUUID() + "." + getExtension(file.getOriginalFilename());
             Path filePath = Paths.get(uploadDir, filename);
-            System.out.println("[DEBUG] Guardando archivo en: " + filePath.toAbsolutePath());
-            System.out.println("[DEBUG] Tamaño archivo: " + file.getSize());
-            // Guardar archivo
             Files.write(filePath, file.getBytes());
-            // Guardar la URL relativa en el usuario
             user.setFotoPerfilUrl("/" + uploadDir + "/" + filename);
             userRepository.save(user);
             return user.getFotoPerfilUrl();
@@ -101,5 +91,29 @@ public class UserServiceImpl implements UserService {
         if (filename == null) return "jpg";
         int dot = filename.lastIndexOf('.');
         return (dot == -1) ? "jpg" : filename.substring(dot + 1);
+    }
+
+    @Override
+    public void changePassword(Long userId, String currentPassword, String newPassword, String confirmNewPassword) {
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isEmpty()) {
+            throw new RuntimeException("Usuario no encontrado");
+        }
+        User user = userOpt.get();
+
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new RuntimeException("La contraseña actual no es correcta");
+        }
+
+        if (!newPassword.equals(confirmNewPassword)) {
+            throw new RuntimeException("La nueva contraseña y su confirmación no coinciden");
+        }
+
+        if (!newPassword.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$")) {
+            throw new RuntimeException("La nueva contraseña debe contener al menos una letra minúscula, una mayúscula y un número");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
     }
 }
